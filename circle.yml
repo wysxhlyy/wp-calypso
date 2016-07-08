@@ -17,7 +17,7 @@ test:
           fi
       : parallel: true
   override:
-    - bin/run-lint :
+    - ./bin/run-lint :
         parallel: true
         files:
           - client/**/*.js
