@@ -6,6 +6,7 @@ import { combineReducers } from 'redux';
 /**
  * Internal dependencies
  */
+import tags from './tags/reducer';
 import lists from './lists/reducer';
 import feeds from './feeds/reducer';
 import follows from './follows/reducer';
@@ -18,6 +19,7 @@ import tags from './tags/reducer';
 import thumbnails from './thumbnails/reducer';
 
 export default combineReducers( {
+	tags,
 	feeds,
 	follows,
 	lists,
