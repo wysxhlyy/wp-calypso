@@ -4,6 +4,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
+import { map } from 'lodash';
 
 /**
  * Internal dependencies
@@ -18,7 +19,7 @@ import notices from 'notices';
 import QueryPosts from 'components/data/query-posts';
 import QueryPostCounts from 'components/data/query-post-counts';
 import Draft from 'my-sites/draft';
-import PostTypeItem from 'my-sites/post-type-list/post';
+import PostItem from 'blocks/post-item';
 import { getSelectedSiteId } from 'state/ui/selectors';
 import {
 	getSitePostsForQueryIgnoringPage,
@@ -78,7 +79,13 @@ const PostsMain = React.createClass( {
 						{ this.translate( 'Start New' ) }
 					</Button>
 				</SectionHeader>
-				{ this.props.drafts && this.props.drafts.map( this.renderDraft, this ) }
+				{ map( this.props.drafts, ( draft ) => (
+					<PostItem
+						compact
+						key={ draft.global_ID }
+						globalId={ draft.global_ID }
+					/>
+				) ) }
 				{ isLoading && <Draft isPlaceholder /> }
 				{ this.props.draftCount > 6 &&
 					<Button compact borderless className="posts__see-all-drafts" href={ `/posts/drafts/${ site.slug }` }>
@@ -88,14 +95,6 @@ const PostsMain = React.createClass( {
 				}
 			</div>
 		);
-	},
-
-	renderDraft( draft ) {
-		if ( ! draft ) {
-			return null;
-		}
-
-		return <PostTypeItem mini key={ draft.global_ID } globalId={ draft.global_ID } />;
 	},
 
 	render() {
