@@ -25,9 +25,8 @@ import {
 	isRequestingSitePostsForQuery
 } from 'state/posts/selectors';
 import Button from 'components/button';
-import Card from 'components/card';
 import Count from 'components/count';
-import Gridicon from 'components/gridicon';
+import SectionHeader from 'components/section-header';
 import { sectionify } from 'lib/route/path';
 import { getAllPostCount } from 'state/posts/counts/selectors';
 import { getEditorNewPostPath } from 'state/ui/editor/selectors';
@@ -74,12 +73,11 @@ const PostsMain = React.createClass( {
 					siteId={ site.ID }
 					query={ this.props.draftsQuery } />
 				<QueryPostCounts siteId={ site.ID } type="post" />
-				<Card compact className="posts__drafts-header">
-					{ this.translate( 'Latest Drafts' ) }
-					<Button borderless href={ this.props.newPostPath }>
-						<Gridicon icon="plus" />
+				<SectionHeader className="posts__drafts-header" label={ this.translate( 'Latest Drafts' ) }>
+					<Button compact href={ this.props.newPostPath }>
+						{ this.translate( 'Start New' ) }
 					</Button>
-				</Card>
+				</SectionHeader>
 				{ this.props.drafts && this.props.drafts.map( this.renderDraft, this ) }
 				{ isLoading && <Draft isPlaceholder /> }
 				{ this.props.draftCount > 6 &&
@@ -96,8 +94,6 @@ const PostsMain = React.createClass( {
 		if ( ! draft ) {
 			return null;
 		}
-
-		const site = this.props.sites.getSelectedSite();
 
 		return <PostTypeItem mini key={ draft.global_ID } globalId={ draft.global_ID } />;
 	},
