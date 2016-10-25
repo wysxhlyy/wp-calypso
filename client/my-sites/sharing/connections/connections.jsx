@@ -10,6 +10,7 @@ import { filter } from 'lodash';
  */
 import {
 	createSiteConnection,
+	deleteSiteConnection,
 	fetchConnections,
 	updateSiteConnection,
 } from 'state/sharing/publicize/actions';
@@ -103,6 +104,7 @@ const SharingConnections = React.createClass( {
 
 	removeConnection: function( connections ) {
 		connections = serviceConnections.filterConnectionsToRemove( connections );
+		connections.map( this.props.deleteSiteConnection );
 		this.props.connections.destroy( connections );
 	},
 
@@ -175,6 +177,7 @@ export default connect(
 	null,
 	{
 		createSiteConnection,
+		deleteSiteConnection,
 		fetchConnections,
 		successNotice,
 		updateSiteConnection,
