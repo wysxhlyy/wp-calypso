@@ -11,6 +11,7 @@ import { times } from 'lodash';
  */
 import { getEligibleKeyringServices } from 'state/sharing/services/selectors';
 import { getSelectedSiteId } from 'state/ui/selectors';
+import QueryKeyringConnections from 'components/data/query-keyring-connections';
 import QueryKeyringServices from 'components/data/query-keyring-services';
 import SectionHeader from 'components/section-header';
 import Service from './service';
@@ -52,6 +53,7 @@ class SharingServicesGroup extends Component {
 
 		return (
 			<div className={ classes }>
+				<QueryKeyringConnections />
 				<QueryKeyringServices />
 				<SectionHeader label={ this.props.title } />
 				<ul className="sharing-services-group__services">
