@@ -1,7 +1,9 @@
 /**
  * External dependencies
  */
-var React = require( 'react' );
+import React from 'react';
+import { connect } from 'react-redux';
+import { some } from 'lodash';
 
 /**
  * Internal dependencies
@@ -19,14 +21,17 @@ var ServiceTip = require( './service-tip' ),
 	FoldableCard = require( 'components/foldable-card' ),
 	SocialLogo = require( 'components/social-logo' );
 
-module.exports = React.createClass( {
+import { getConnectionsBySiteId, isFetchingConnections } from 'state/sharing/publicize/selectors';
+import { getSelectedSiteId } from 'state/ui/selectors';
+
+const SharingService = React.createClass( {
 	displayName: 'SharingService',
 
 	propTypes: {
 		site: React.PropTypes.object,                    // The site for which connections are created
 		user: React.PropTypes.object,                    // A user object
 		service: React.PropTypes.object.isRequired,      // The single service object
-		connections: React.PropTypes.object.isRequired,  // A collections-list instance
+		connections: React.PropTypes.object,             // A collections-list instance
 		onAddConnection: React.PropTypes.func,           // Handler for creating a new connection for this service
 		onRemoveConnection: React.PropTypes.func,        // Handler for removing a connection from this service
 		onRefreshConnection: React.PropTypes.func,       // Handler for refreshing a Keyring connection for this service
@@ -188,8 +193,35 @@ module.exports = React.createClass( {
 		}
 	},
 
+	/**
+	 * Given a service name and optional site ID, returns the current status of the
+	 * service's connection.
+	 *
+	 * @param {string} service The name of the service to check
+	 * @return {string} Connection status.
+	 */
+	getConnectionStatus: function( service ) {
+		let status;
+
+		if ( this.props.isFetching ) {
+			// When connections are still loading, we don't know the status
+			status = 'unknown';
+		} else if ( ! some( this.props.siteConnections, { service } ) ) {
+			// If no connections exist, the service isn't connected
+			status = 'not-connected';
+		} else if ( some( this.props.siteConnections, { status: 'broken', keyring_connection_user_ID: this.props.user.ID } ) ) {
+			// A problematic connection exists
+			status = 'reconnect';
+		} else {
+			// If all else passes, assume service is connected
+			status = 'connected';
+		}
+
+		return status;
+	},
+
 	render: function() {
-		const connectionStatus = serviceConnections.getConnectionStatus( this.props.service.ID ),
+		const connectionStatus = this.getConnectionStatus( this.props.service.ID ),
 			connections = serviceConnections.getConnections( this.props.service.ID ),
 			elementClass = [
 				'sharing-service',
@@ -264,3 +296,10 @@ module.exports = React.createClass( {
 		);
 	}
 } );
+
+export default connect(
+	( state ) => ( {
+		isFetching: isFetchingConnections( state, getSelectedSiteId( state ) ),
+		siteConnections: getConnectionsBySiteId( state, getSelectedSiteId( state ) ),
+	} ),
+)( SharingService );
