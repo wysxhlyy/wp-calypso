@@ -28,10 +28,6 @@ class SharingServicesGroup extends Component {
 		site: PropTypes.object,
 		user: PropTypes.object,
 		connections: PropTypes.object,
-		onAddConnection: PropTypes.func,
-		onRemoveConnection: PropTypes.func,
-		onRefreshConnection: PropTypes.func,
-		onToggleSitewideConnection: PropTypes.func,
 		initialized: PropTypes.bool,
 		services: PropTypes.array,
 		title: PropTypes.string.isRequired,
@@ -39,10 +35,6 @@ class SharingServicesGroup extends Component {
 	};
 
 	static defaultProps = {
-		onAddConnection: () => {},
-		onRemoveConnection: () => {},
-		onRefreshConnection: () => {},
-		onToggleSitewideConnection: () => {},
 		initialized: false
 	};
 
@@ -62,10 +54,6 @@ class SharingServicesGroup extends Component {
 							<Service
 								key={ service.ID }
 								connections={ this.props.connections }
-								onAddConnection={ this.props.onAddConnection }
-								onRefreshConnection={ this.props.onRefreshConnection }
-								onRemoveConnection={ this.props.onRemoveConnection }
-								onToggleSitewideConnection={ this.props.onToggleSitewideConnection }
 								service={ service }
 								site={ this.props.site }
 								user={ this.props.user } /> )

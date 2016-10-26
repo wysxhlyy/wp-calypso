@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { connect } from 'react-redux';
-import { some } from 'lodash';
+import { filter, some } from 'lodash';
 
 /**
  * Internal dependencies
@@ -21,8 +21,17 @@ var ServiceTip = require( './service-tip' ),
 	FoldableCard = require( 'components/foldable-card' ),
 	SocialLogo = require( 'components/social-logo' );
 
+import AccountDialog from './account-dialog';
+import {
+	createSiteConnection,
+	deleteSiteConnection,
+	fetchConnections,
+	updateSiteConnection,
+} from 'state/sharing/publicize/actions';
 import { getConnectionsBySiteId, isFetchingConnections } from 'state/sharing/publicize/selectors';
 import { getSelectedSiteId } from 'state/ui/selectors';
+import PopupMonitor from 'lib/popup-monitor';
+import { warningNotice } from 'state/notices/actions';
 
 const SharingService = React.createClass( {
 	displayName: 'SharingService',
@@ -32,10 +41,6 @@ const SharingService = React.createClass( {
 		user: React.PropTypes.object,                    // A user object
 		service: React.PropTypes.object.isRequired,      // The single service object
 		connections: React.PropTypes.object,             // A collections-list instance
-		onAddConnection: React.PropTypes.func,           // Handler for creating a new connection for this service
-		onRemoveConnection: React.PropTypes.func,        // Handler for removing a connection from this service
-		onRefreshConnection: React.PropTypes.func,       // Handler for refreshing a Keyring connection for this service
-		onToggleSitewideConnection: React.PropTypes.func // Handler to invoke when toggling a connection to be shared sitewide
 	},
 
 	mixins: [ observe( 'connections' ) ],
@@ -45,7 +50,8 @@ const SharingService = React.createClass( {
 			isOpen: false,          // The service is visually opened
 			isConnecting: false,    // A pending connection is awaiting authorization
 			isDisconnecting: false, // A pending disconnection is awaiting completion
-			isRefreshing: false     // A pending refresh is awaiting completion
+			isRefreshing: false,    // A pending refresh is awaiting completion
+			isSelectingAccount: false,
 		};
 	},
 
@@ -147,7 +153,7 @@ const SharingService = React.createClass( {
 		this.setState( { isConnecting: true } );
 		this.props.connections.once( 'create:success', this.onConnectionSuccess );
 		this.props.connections.once( 'create:error', this.onConnectionError );
-		this.props.onAddConnection( this.props.service );
+		this.addConnection( this.props.service );
 	},
 
 	disconnect: function( connections ) {
@@ -160,7 +166,7 @@ const SharingService = React.createClass( {
 		this.setState( { isDisconnecting: true } );
 		this.props.connections.once( 'destroy:success', this.onDisconnectionSuccess );
 		this.props.connections.once( 'destroy:error', this.onDisconnectionError );
-		this.props.onRemoveConnection( connections );
+		this.removeConnection( connections );
 	},
 
 	refresh: function( connection ) {
@@ -173,11 +179,11 @@ const SharingService = React.createClass( {
 			// the first broken connection owned by the current user.
 			connection = serviceConnections.getRefreshableConnections( this.props.service.ID )[ 0 ];
 		}
-		this.props.onRefreshConnection( connection );
+		this.refreshConnection( connection );
 	},
 
 	performAction: function() {
-		const connectionStatus = serviceConnections.getConnectionStatus( this.props.service.ID );
+		const connectionStatus = this.getConnectionStatus( this.props.service.ID );
 
 		// Depending on current status, perform an action when user clicks the
 		// service action button
@@ -191,6 +197,73 @@ const SharingService = React.createClass( {
 			this.connect();
 			analytics.ga.recordEvent( 'Sharing', 'Clicked Connect Button', this.props.service.ID );
 		}
+	},
+
+	addConnection: function( service, keyringConnectionId, externalUserId = false ) {
+		const _this = this,
+			siteId = this.props.site.ID;
+
+		if ( service ) {
+			if ( keyringConnectionId ) {
+				// Since we have a Keyring connection to work with, we can immediately
+				// create or update the connection
+				const keyringConnections = filter( this.props.fetchConnections( siteId ), { keyringConnectionId: keyringConnectionId } );
+
+				if ( siteId && keyringConnections.length ) {
+					// If a Keyring connection is already in use by another connection,
+					// we should trigger an update. There should only be one connection,
+					// so we're correct in using the connection ID from the first
+					this.props.updateSiteConnection( siteId, keyringConnections[ 0 ].ID, { external_user_ID: externalUserId } );
+				} else {
+					this.props.createSiteConnection( siteId, keyringConnectionId, externalUserId );
+				}
+
+				analytics.ga.recordEvent( 'Sharing', 'Clicked Connect Button in Modal', this.props.service.ID );
+			} else {
+				// Attempt to create a new connection. If a Keyring connection ID
+				// is not provided, the user will need to authorize the app
+				const popupMonitor = new PopupMonitor();
+
+				popupMonitor.open( service.connect_URL, null, 'toolbar=0,location=0,status=0,menubar=0,' +
+					popupMonitor.getScreenCenterSpecs( 780, 500 ) );
+
+				popupMonitor.once( 'close', () => {
+					// When the user has finished authorizing the connection
+					// (or otherwise closed the window), force a refresh
+					_this.props.fetchConnections( siteId );
+
+					// In the case that a Keyring connection doesn't exist, wait for app
+					// authorization to occur, then display with the available connections
+					if ( serviceConnections.didKeyringConnectionSucceed( service.ID, siteId ) && 'publicize' === service.type ) {
+						_this.setState( { isSelectingAccount: true } );
+					}
+				} );
+			}
+		} else {
+			// If an account wasn't selected from the dialog or the user cancels
+			// the connection, the dialog should simply close
+			this.props.warningNotice( this.translate( 'The connection could not be made because no account was selected.', {
+				context: 'Sharing: Publicize connection confirmation'
+			} ) );
+			analytics.ga.recordEvent( 'Sharing', 'Clicked Cancel Button in Modal', this.props.service.ID );
+		}
+
+		// Reset active account selection
+		this.setState( { isSelectingAccount: false } );
+	},
+
+	refreshConnection: function( connection ) {
+		this.props.connections.refresh( connection );
+	},
+
+	removeConnection: function( connections ) {
+		connections = serviceConnections.filterConnectionsToRemove( connections );
+		connections.map( this.props.deleteSiteConnection );
+		this.props.connections.destroy( connections );
+	},
+
+	toggleSitewideConnection: function( connection, isSitewide ) {
+		this.props.connections.update( connection, { shared: isSitewide } );
 	},
 
 	/**
@@ -238,6 +311,11 @@ const SharingService = React.createClass( {
 				Path: 'path',
 				Eventbrite: 'eventbrite'
 			};
+		let accounts;
+
+		if ( this.state.isSelectingAccount ) {
+			accounts = serviceConnections.getAvailableExternalAccounts( this.props.service.ID, this.props.site.ID );
+		}
 
 		const header = (
 			<div>
@@ -284,15 +362,23 @@ const SharingService = React.createClass( {
 				isDisconnecting={ this.state.isDisconnecting } />
 		);
 		return (
-			<FoldableCard
-				className={ elementClass }
-				header={ header }
-				clickableHeader
-				compact
-				summary={ action }
-				expandedSummary={ action } >
-				{ content }
-			</FoldableCard>
+			<div>
+				<AccountDialog
+					isVisible={ this.state.isSelectingAccount }
+					service={ this.props.service }
+					accounts={ accounts }
+					onAccountSelected={ this.addConnection } />
+				<FoldableCard
+					className={ elementClass }
+					header={ header }
+					clickableHeader
+					compact
+					summary={ action }
+					expandedSummary={ action } >
+					{ content }
+
+				</FoldableCard>
+			</div>
 		);
 	}
 } );
@@ -302,4 +388,11 @@ export default connect(
 		isFetching: isFetchingConnections( state, getSelectedSiteId( state ) ),
 		siteConnections: getConnectionsBySiteId( state, getSelectedSiteId( state ) ),
 	} ),
+	{
+		createSiteConnection,
+		deleteSiteConnection,
+		fetchConnections,
+		updateSiteConnection,
+		warningNotice,
+	},
 )( SharingService );
