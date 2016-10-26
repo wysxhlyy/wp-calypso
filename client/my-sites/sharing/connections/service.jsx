@@ -29,7 +29,8 @@ import {
 	updateSiteConnection,
 } from 'state/sharing/publicize/actions';
 import { getConnectionsBySiteId, isFetchingConnections } from 'state/sharing/publicize/selectors';
-import { getSelectedSiteId } from 'state/ui/selectors';
+import { getCurrentUser } from 'state/current-user/selectors';
+import { getSelectedSite, getSelectedSiteId } from 'state/ui/selectors';
 import PopupMonitor from 'lib/popup-monitor';
 import { warningNotice } from 'state/notices/actions';
 
@@ -386,7 +387,9 @@ const SharingService = React.createClass( {
 export default connect(
 	( state ) => ( {
 		isFetching: isFetchingConnections( state, getSelectedSiteId( state ) ),
+		site: getSelectedSite( state ),
 		siteConnections: getConnectionsBySiteId( state, getSelectedSiteId( state ) ),
+		user: getCurrentUser( state ),
 	} ),
 	{
 		createSiteConnection,

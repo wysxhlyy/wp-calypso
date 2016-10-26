@@ -25,8 +25,6 @@ const NUMBER_OF_PLACEHOLDERS = 4;
 class SharingServicesGroup extends Component {
 
 	static propTypes = {
-		site: PropTypes.object,
-		user: PropTypes.object,
 		connections: PropTypes.object,
 		initialized: PropTypes.bool,
 		services: PropTypes.array,
@@ -35,7 +33,10 @@ class SharingServicesGroup extends Component {
 	};
 
 	static defaultProps = {
-		initialized: false
+		connections: {},
+		initialized: false,
+		services: [],
+		description: '',
 	};
 
 	render() {
@@ -54,9 +55,7 @@ class SharingServicesGroup extends Component {
 							<Service
 								key={ service.ID }
 								connections={ this.props.connections }
-								service={ service }
-								site={ this.props.site }
-								user={ this.props.user } /> )
+								service={ service } /> )
 						: times( NUMBER_OF_PLACEHOLDERS, ( index ) =>
 							<ServicePlaceholder
 								key={ 'service-placeholder-' + index } /> )
@@ -69,6 +68,7 @@ class SharingServicesGroup extends Component {
 
 export default connect(
 	( state, { type } ) => ( {
+		initialized: !! getSelectedSiteId( state ),
 		services: getEligibleKeyringServices( state, getSelectedSiteId( state ), type )
 	} ),
 )( SharingServicesGroup );

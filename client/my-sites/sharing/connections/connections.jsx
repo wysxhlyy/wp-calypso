@@ -1,44 +1,35 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { Component, PropTypes } from 'react';
+import { localize } from 'i18n-calypso';
 
 /**
  * Internal dependencies
  */
-import observe from 'lib/mixins/data-observe';
 import SharingServicesGroup from './services-group';
 
-const SharingConnections = React.createClass( {
-	displayName: 'SharingConnections',
+class SharingConnections extends Component {
+	static propTypes = {
+		connections: PropTypes.object,
+		translate: PropTypes.func,
+	};
 
-	mixins: [ observe( 'sites', 'connections', 'user' ) ],
-
-	render: function() {
-		const commonGroupProps = {
-			user: this.props.user,
-			connections: this.props.connections,
-			initialized: !! this.props.sites.selected
-		};
-
-		if ( this.props.sites.selected ) {
-			commonGroupProps.site = this.props.sites.getSelectedSite();
-		}
-
+	render() {
 		return (
 			<div id="sharing-connections" className="sharing-settings sharing-connections">
 				<SharingServicesGroup
 					type="publicize"
-					title={ this.translate( 'Publicize Your Posts' ) }
-					{ ...commonGroupProps } />
+					title={ this.props.translate( 'Publicize Your Posts' ) }
+					connections={ this.props.connections } />
 				<SharingServicesGroup
 					type="other"
-					title={ this.translate( 'Other Connections' ) }
-					description={ this.translate( 'Connect any of these additional services to further enhance your site.' ) }
-					{ ...commonGroupProps } />
+					title={ this.props.translate( 'Other Connections' ) }
+					description={ this.props.translate( 'Connect any of these additional services to further enhance your site.' ) }
+					connections={ this.props.connections } />
 			</div>
 		);
 	}
-} );
+}
 
-export default SharingConnections;
+export default localize( SharingConnections );
