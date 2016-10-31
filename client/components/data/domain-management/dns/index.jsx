@@ -3,6 +3,7 @@
  */
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { get } from 'lodash';
 
 /**
  * Internal dependencies
@@ -10,7 +11,9 @@ import { connect } from 'react-redux';
 import StoreConnection from 'components/data/store-connection';
 import DnsStore from 'lib/domains/dns/store';
 import DomainsStore from 'lib/domains/store';
+import QuerySiteDomains from 'components/data/query-site-domains';
 import upgradesActions from 'lib/upgrades/actions';
+import { getDomainsBySite } from 'state/sites/domains/selectors';
 import { getSelectedSite } from 'state/ui/selectors';
 
 const stores = [
@@ -19,17 +22,11 @@ const stores = [
 ];
 
 function getStateFromStores( props ) {
-	let domains;
-
-	if ( props.selectedSite ) {
-		domains = DomainsStore.getBySite( props.selectedSite.ID );
-	}
-
 	return {
-		domains,
+		domains: props.domains,
 		dns: DnsStore.getByDomainName( props.selectedDomainName ),
 		selectedDomainName: props.selectedDomainName,
-		selectedSite: props.selectedSite
+		selectedSite: props.selectedSite,
 	};
 }
 
@@ -55,20 +52,31 @@ export class DnsData extends Component {
 	};
 
 	render() {
+		const { selectedSite } = this.props;
+
 		return (
-			<StoreConnection
-				component={ this.props.component }
-				stores={ stores }
-				getStateFromStores={ getStateFromStores }
-				selectedDomainName={ this.props.selectedDomainName }
-				selectedSite={ this.props.selectedSite }
-			/>
+			<div>
+				<QuerySiteDomains siteId={ get( selectedSite, 'ID' ) } />
+				<StoreConnection
+					component={ this.props.component }
+					stores={ stores }
+					getStateFromStores={ getStateFromStores }
+					domains={ this.props.domains }
+					selectedDomainName={ this.props.selectedDomainName }
+					selectedSite={ this.props.selectedSite }
+				/>
+			</div>
 		);
 	}
 }
 
-const mapStateToProps = state => ( {
-	selectedSite: getSelectedSite( state ),
-} );
+const mapStateToProps = state => {
+	const selectedSite = getSelectedSite( state );
+
+	return {
+		domains: getDomainsBySite( state, selectedSite ),
+		selectedSite,
+	};
+};
 
 export default connect( mapStateToProps )( DnsData );

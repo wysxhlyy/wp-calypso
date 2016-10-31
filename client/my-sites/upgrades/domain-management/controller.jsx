@@ -202,7 +202,7 @@ module.exports = {
 
 		renderWithReduxStore(
 			<DnsData
-				component={ DomainManagement.Dns }
+				component={ DomainManagement.Dns.Dns }
 				selectedDomainName={ pageContext.params.domain }
 			/>,
 			document.getElementById( 'primary' ),

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { PropTypes } from 'react';
 import page from 'page';
 
 /**
@@ -18,19 +18,39 @@ import { getSelectedDomain, isRegisteredDomain } from 'lib/domains';
 import Card from 'components/card/compact';
 import SectionHeader from 'components/section-header';
 
-const Dns = React.createClass( {
+export const Dns = React.createClass( {
 	propTypes: {
-		domains: React.PropTypes.object.isRequired,
-		dns: React.PropTypes.object.isRequired,
-		selectedDomainName: React.PropTypes.string.isRequired,
-		selectedSite: React.PropTypes.oneOfType( [
-			React.PropTypes.object,
-			React.PropTypes.bool
-		] ).isRequired
+		dns: PropTypes.object.isRequired,
+		selectedDomainName: PropTypes.string.isRequired,
+		selectedSite: PropTypes.oneOfType( [
+			PropTypes.object,
+			PropTypes.bool
+		] ).isRequired,
+		translate: PropTypes.func,
+	},
+
+	goBack() {
+		const {
+			selectedDomain,
+			selectedDomainName,
+			selectedSite: { slug },
+		} = this.props;
+
+		const path = isRegisteredDomain( selectedDomain )
+			? paths.domainManagementNameServers
+			: paths.domainManagementEdit;
+
+		page( path( slug, selectedDomainName ) );
 	},
 
 	render() {
-		if ( ! this.props.dns.hasLoadedFromServer ) {
+		const {
+			dns,
+			selectedDomainName,
+			selectedSite,
+		} = this.props;
+
+		if ( ! dns.hasLoadedFromServer ) {
 			return <DomainMainPlaceholder goBack={ this.goBack } />;
 		}
 
@@ -38,7 +58,8 @@ const Dns = React.createClass( {
 			<Main className="dns">
 				<Header
 					onClick={ this.goBack }
-					selectedDomainName={ this.props.selectedDomainName }>
+					selectedDomainName={ selectedDomainName }
+				>
 					{ this.translate( 'DNS Records' ) }
 				</Header>
 
@@ -47,31 +68,16 @@ const Dns = React.createClass( {
 					<DnsDetails />
 
 					<DnsList
-						dns={ this.props.dns }
-						selectedSite={ this.props.selectedSite }
-						selectedDomainName={ this.props.selectedDomainName } />
+						dns={ dns }
+						selectedSite={ selectedSite }
+						selectedDomainName={ selectedDomainName } />
 
 					<DnsAddNew
-						isSubmittingForm={ this.props.dns.isSubmittingForm }
-						selectedDomainName={ this.props.selectedDomainName } />
+						isSubmittingForm={ dns.isSubmittingForm }
+						selectedDomainName={ selectedDomainName } />
 				</Card>
 			</Main>
 		);
-	},
-
-	goBack() {
-		let path;
-
-		if ( isRegisteredDomain( getSelectedDomain( this.props ) ) ) {
-			path = paths.domainManagementNameServers;
-		} else {
-			path = paths.domainManagementEdit;
-		}
-
-		page( path(
-			this.props.selectedSite.slug,
-			this.props.selectedDomainName
-		) );
 	}
 } );
 
