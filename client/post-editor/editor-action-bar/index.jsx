@@ -16,6 +16,7 @@ import utils from 'lib/posts/utils';
 import Tooltip from 'components/tooltip';
 import Button from 'components/button';
 import EditorActionBarViewLabel from './view-label';
+import analytics from 'lib/analytics';
 
 export default React.createClass( {
 
@@ -35,6 +36,10 @@ export default React.createClass( {
 		return {
 			viewLinkTooltip: false
 		};
+	},
+
+	recordEvent() {
+		analytics.tracks.recordEvent( 'calypso_editor_published_view' );
 	},
 
 	renderPostVisibility() {
@@ -83,6 +88,7 @@ export default React.createClass( {
 							href={ this.props.savedPost.URL }
 							target="_blank"
 							rel="noopener noreferrer"
+							onClick={ this.recordEvent }
 							onMouseEnter={ () => this.setState( { viewLinkTooltip: true } ) }
 							onMouseLeave={ () => this.setState( { viewLinkTooltip: false } ) }
 							ref="viewLink"
