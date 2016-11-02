@@ -30,30 +30,33 @@ const isSVGCSSAnimationSupported = ( () => {
 export default class Spinner extends PureComponent {
 	static propTypes = {
 		className: React.PropTypes.string,
+		delay: React.PropTypes.number,
 		size: React.PropTypes.number,
-		duration: React.PropTypes.number
+		counterClockwise: React.PropTypes.bool,
 	};
 
 	static instances = 0;
 
 	static defaultProps = {
+		delay: 100,
 		size: 20,
-		duration: 3000
+		counterClockwise: false,
 	};
 
-	constructor() {
-		super();
+	constructor( props ) {
+		super( props );
 		this.state = {
 			// We won't always have access to user-agent in server-side context, so
 			// initialize the spinner with fallback animations and check for support
 			// in componentDidMount()
-			isSVGCSSAnimationSupported: false
+			isSVGCSSAnimationSupported: false,
+			show: ! props.delay
 		};
 	}
 
 	componentWillMount() {
 		this.setState( {
-			instanceId: ++Spinner.instances
+			instanceId: ++Spinner.instances,
 		} );
 	}
 
@@ -66,12 +69,23 @@ export default class Spinner extends PureComponent {
 				isSVGCSSAnimationSupported: isSVGCSSAnimationSupported
 			} );
 		}
+
+		if ( this.props.delay ) {
+			if ( this.timer ) {
+				clearTimeout( this.timer );
+			}
+
+			this.timer = setTimeout( () => this.setState( { show: true } ), this.props.delay );
+		}
 	}
 
 	getClassName() {
-		return classNames( 'spinner', this.props.className, {
-			'is-fallback': ! this.state.isSVGCSSAnimationSupported
-		} );
+		return classNames(
+			'spinner',
+			this.props.className,
+			{ 'is-fallback': ! this.state.isSVGCSSAnimationSupported },
+			{ 'is-counter-clockwise': this.props.counterClockwise }
+		);
 	}
 
 	renderFallback() {
@@ -89,6 +103,10 @@ export default class Spinner extends PureComponent {
 	}
 
 	render() {
+		if ( ! this.state.show ) {
+			return null;
+		}
+
 		if ( ! this.state.isSVGCSSAnimationSupported ) {
 			return this.renderFallback();
 		}
