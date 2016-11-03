@@ -3,14 +3,15 @@
  */
 var React = require( 'react' ),
 	classNames = require( 'classnames' );
+import { connect } from 'react-redux';
 
 /**
  * Internal dependencies
  */
-var analytics = require( 'lib/analytics' ),
-	serviceConnections = require( './service-connections' );
+var analytics = require( 'lib/analytics' );
+import { getUser } from 'state/users/selectors';
 
-module.exports = React.createClass( {
+const SharingConnection = React.createClass( {
 	displayName: 'SharingConnection',
 
 	propTypes: {
@@ -72,7 +73,7 @@ module.exports = React.createClass( {
 	},
 
 	getReconnectButton: function() {
-		var currentUser = this.props.user.get();
+		var currentUser = this.props.user;
 
 		if ( currentUser && 'broken' === this.props.connection.status && currentUser.ID === this.props.connection.keyring_connection_user_ID ) {
 			return (
@@ -84,7 +85,10 @@ module.exports = React.createClass( {
 	},
 
 	getDisconnectButton: function() {
-		if ( this.props.showDisconnect && serviceConnections.canCurrentUserPerformActionOnConnection( 'delete', this.props.connection ) ) {
+		const userCanDelete = this.props.site.capabilities && this.props.site.capabilities.edit_others_posts ||
+			this.props.connection.user_ID === this.props.user.ID;
+
+		if ( this.props.showDisconnect && userCanDelete ) {
 			return (
 				<a onClick={ this.disconnect } className="sharing-connection__account-action disconnect">
 					{ this.translate( 'Disconnect' ) }
@@ -107,14 +111,11 @@ module.exports = React.createClass( {
 	},
 
 	getConnectionKeyringUserLabel: function() {
-		var currentUser = this.props.user.get(),
-			keyringUser = this.props.site.getUser( this.props.connection.keyring_connection_user_ID );
-
-		if ( currentUser && keyringUser && currentUser.ID !== keyringUser.ID ) {
+		if ( this.props.user && this.props.connectionUser && this.props.user.ID !== this.props.connectionUser.ID ) {
 			return (
 				<aside className="sharing-connection__keyring-user">
 					{ this.translate( 'Connected by %(username)s', {
-						args: { username: keyringUser.nice_name },
+						args: { username: this.props.connectionUser.nice_name },
 						context: 'Sharing: connections'
 					} ) }
 				</aside>
@@ -123,10 +124,10 @@ module.exports = React.createClass( {
 	},
 
 	getConnectionSitewideElement: function() {
-		var userCanUpdate = serviceConnections.canCurrentUserPerformActionOnConnection( 'update', this.props.connection ),
+		var userCanUpdate = this.props.site.capabilities && this.props.site.capabilities.edit_others_posts,
 			content = [];
 
-		if ( ! serviceConnections.isServiceForPublicize( this.props.service.ID ) ) {
+		if ( 'publicize' !== this.props.service.type ) {
 			return;
 		}
 
@@ -171,3 +172,9 @@ module.exports = React.createClass( {
 		);
 	}
 } );
+
+export default connect(
+	( state, { connection } ) => ( {
+		connectionUser: getUser( state, connection.keyring_connection_user_ID ),
+	} ),
+)( SharingConnection );

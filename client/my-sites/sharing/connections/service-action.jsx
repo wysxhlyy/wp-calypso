@@ -6,7 +6,6 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import serviceConnections from './service-connections';
 import Button from 'components/button';
 
 module.exports = React.createClass( {
@@ -19,7 +18,8 @@ module.exports = React.createClass( {
 		connections: React.PropTypes.array,
 		isDisconnecting: React.PropTypes.bool,
 		isRefreshing: React.PropTypes.bool,
-		isConnecting: React.PropTypes.bool
+		isConnecting: React.PropTypes.bool,
+		removableConnections: React.PropTypes.array,
 	},
 
 	getDefaultProps: function() {
@@ -29,7 +29,8 @@ module.exports = React.createClass( {
 			connections: Object.freeze( [] ),
 			isDisconnecting: false,
 			isRefreshing: false,
-			isConnecting: false
+			isConnecting: false,
+			removableConnections: Object.freeze( [] ),
 		};
 	},
 
@@ -42,14 +43,10 @@ module.exports = React.createClass( {
 		let primary = false,
 			borderless = false,
 			warning = false,
-			isPending, removableConnections, label;
+			isPending, label;
 
 		isPending = 'unknown' === this.props.status || this.props.isDisconnecting ||
 			this.props.isRefreshing || this.props.isConnecting;
-
-		if ( 'connected' === this.props.status ) {
-			removableConnections = serviceConnections.getRemovableConnections( this.props.service.ID );
-		}
 
 		if ( 'unknown' === this.props.status ) {
 			label = this.translate( 'Loading…', { context: 'Sharing: Publicize status pending button label' } );
@@ -60,8 +57,8 @@ module.exports = React.createClass( {
 			warning = true;
 		} else if ( this.props.isConnecting ) {
 			label = this.translate( 'Connecting…', { context: 'Sharing: Publicize connect pending button label' } );
-		} else if ( 'connected' === this.props.status && removableConnections.length ) {
-			if ( removableConnections.length > 1 ) {
+		} else if ( 'connected' === this.props.status && this.props.removableConnections.length ) {
+			if ( this.props.removableConnections.length > 1 ) {
 				label = this.translate( 'Disconnect All', { context: 'Sharing: Publicize disconnect button label' } );
 			} else {
 				label = this.translate( 'Disconnect', { context: 'Sharing: Publicize disconnect button label' } );

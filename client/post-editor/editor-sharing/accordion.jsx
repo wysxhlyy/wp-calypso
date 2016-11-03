@@ -5,7 +5,7 @@ import React, { PropTypes } from 'react';
 import classNames from 'classnames';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { map, includes } from 'lodash';
+import { map, includes, uniq } from 'lodash';
 
 /**
  * Internal dependencies
@@ -13,7 +13,6 @@ import { map, includes } from 'lodash';
 import Accordion from 'components/accordion';
 import FormTextInput from 'components/forms/form-text-input';
 import Gridicon from 'components/gridicon';
-import serviceConnections from 'my-sites/sharing/connections/service-connections';
 import PostMetadata from 'lib/post-metadata';
 import Sharing from './';
 import AccordionSection from 'components/accordion/section';
@@ -49,7 +48,10 @@ const EditorSharingAccordion = React.createClass( {
 		const targeted = connections.filter( ( connection ) => {
 			return ! includes( skipped, connection.keyring_connection_ID );
 		} );
-		const targetedServices = serviceConnections.getServicesFromConnections( targeted );
+		const targetedServices = uniq( targeted.map( ( connection ) => ( {
+			ID: connection.service,
+			label: connection.label,
+		} ) ), 'ID' );
 
 		return map( targetedServices, 'label' ).join( ', ' );
 	},

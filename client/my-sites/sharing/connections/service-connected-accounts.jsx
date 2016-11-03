@@ -7,7 +7,6 @@ var React = require( 'react' );
  * Internal dependencies
  */
 var Connection = require( './connection' ),
-	serviceConnections = require( './service-connections' ),
 	analytics = require( 'lib/analytics' );
 
 module.exports = React.createClass( {
@@ -56,7 +55,7 @@ module.exports = React.createClass( {
 	},
 
 	getConnectAnotherElement: function() {
-		if ( serviceConnections.supportsMultipleConnectionsPerSite( this.props.service.ID ) ) {
+		if ( 'publicize' === this.props.service.type ) {
 			return (
 				<a onClick={ this.connectAnother } className="button new-account">
 					{ this.translate( 'Connect a different account', { comment: 'Sharing: Publicize connections' } ) }

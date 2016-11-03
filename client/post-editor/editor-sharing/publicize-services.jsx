@@ -2,14 +2,16 @@
  * External dependencies
  */
 var React = require( 'react' );
+import { connect } from 'react-redux';
+import { uniq } from 'lodash';
 
 /**
  * Internal dependencies
  */
-var serviceConnections = require( 'my-sites/sharing/connections/service-connections' ),
-	EditorSharingPublicizeConnection = require( './publicize-connection' );
+var EditorSharingPublicizeConnection = require( './publicize-connection' );
+import { getCurrentUserId } from 'state/current-user/selectors';
 
-module.exports = React.createClass( {
+const EditorSharingPublicizeServices = React.createClass( {
 	displayName: 'EditorSharingPublicizeServices',
 
 	propTypes: {
@@ -20,7 +22,10 @@ module.exports = React.createClass( {
 	},
 
 	renderServices: function() {
-		var services = serviceConnections.getServicesFromConnections( this.props.connections );
+		const services = uniq( this.props.connections.map( ( connection ) => ( {
+			ID: connection.service,
+			label: connection.label,
+		} ) ), 'ID' );
 
 		return services.map( function( service ) {
 			return (
@@ -33,9 +38,10 @@ module.exports = React.createClass( {
 	},
 
 	renderConnections: function( serviceName ) {
-		const connections = serviceConnections.getConnectionsAvailableToCurrentUser(
-			serviceName,
-			this.props.connections
+		// Only include connections of the specified service, filtered by
+		// those owned by the current user or shared.
+		const connections = this.props.connections.filter( ( connection ) =>
+			connection.service === serviceName && ( connection.keyring_connection_user_ID === this.props.userId || connection.shared )
 		);
 
 		return connections.map( function( connection ) {
@@ -57,3 +63,9 @@ module.exports = React.createClass( {
 		);
 	}
 } );
+
+export default connect(
+	( state ) => ( {
+		userId: getCurrentUserId( state ),
+	} ),
+)( EditorSharingPublicizeServices );
