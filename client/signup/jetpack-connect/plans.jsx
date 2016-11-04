@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import page from 'page';
 import React, { Component, PropTypes } from 'react';
 import { localize } from 'i18n-calypso';
-import { bindActionCreators } from 'redux';
 
 /**
  * Internal dependencies
@@ -221,14 +220,10 @@ export default connect(
 			selectedPlan
 		};
 	},
-	( dispatch ) => {
-		return Object.assign( {},
-			bindActionCreators( { goBackToWpAdmin, completeFlow, selectPlanInAdvance }, dispatch ),
-			{
-				recordTracksEvent( eventName, props ) {
-					dispatch( recordTracksEvent( eventName, props ) );
-				}
-			}
-		);
+	{
+		goBackToWpAdmin,
+		completeFlow,
+		selectPlanInAdvance,
+		recordTracksEvent
 	}
 )( localize( Plans ) );
