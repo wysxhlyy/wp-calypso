@@ -11,6 +11,7 @@ import { bindActionCreators } from 'redux';
  * Internal dependencies
  */
 import PlansGrid from './plans-grid';
+import { PLAN_JETPACK_FREE, PLAN_JETPACK_PREMIUM, PLAN_JETPACK_BUSINESS } from 'lib/plans/constants';
 import { getPlansBySite } from 'state/sites/plans/selectors';
 import { recordTracksEvent } from 'state/analytics/actions';
 import { getCurrentUser } from 'state/current-user/selectors';
@@ -95,27 +96,27 @@ class Plans extends Component {
 	hasPlan( site ) {
 		return site &&
 			site.plan &&
-			( site.plan.product_slug === 'jetpack_business' || site.plan.product_slug === 'jetpack_premium' );
+			( site.plan.product_slug === PLAN_JETPACK_BUSINESS || site.plan.product_slug === PLAN_JETPACK_PREMIUM );
 	}
 
 	autoselectPlan() {
 		if ( ! this.props.showFirst ) {
-			if ( this.props.flowType === 'pro' || this.props.selectedPlan === 'jetpack_business' ) {
-				const plan = this.props.getPlanBySlug( 'jetpack_business' );
+			if ( this.props.flowType === 'pro' || this.props.selectedPlan === PLAN_JETPACK_BUSINESS ) {
+				const plan = this.props.getPlanBySlug( PLAN_JETPACK_BUSINESS );
 				if ( plan ) {
 					this.selectPlan( plan );
 					return;
 				}
 			}
-			if ( this.props.flowType === 'premium' || this.props.selectedPlan === 'jetpack_premium' ) {
-				const plan = this.props.getPlanBySlug( 'jetpack_premium' );
+			if ( this.props.flowType === 'premium' || this.props.selectedPlan === PLAN_JETPACK_PREMIUM ) {
+				const plan = this.props.getPlanBySlug( PLAN_JETPACK_PREMIUM );
 				if ( plan ) {
 					this.selectPlan( plan );
 					return;
 				}
 			}
 			if ( this.props.selectedPlan === 'free' ||
-				this.props.selectedPlan === 'jetpack_free' ) {
+				this.props.selectedPlan === PLAN_JETPACK_FREE ) {
 				this.selectFreeJetpackPlan();
 			}
 		}
@@ -142,15 +143,15 @@ class Plans extends Component {
 		// clears whatever we had stored in local cache
 		this.props.selectPlanInAdvance( null, this.props.selectedSite.slug );
 
-		if ( cartItem.product_slug === 'jetpack_free' ) {
+		if ( cartItem.product_slug === PLAN_JETPACK_FREE ) {
 			return this.selectFreeJetpackPlan();
 		}
-		if ( cartItem.product_slug === 'jetpack_premium' ) {
+		if ( cartItem.product_slug === PLAN_JETPACK_PREMIUM ) {
 			this.props.recordTracksEvent( 'calypso_jpc_plans_submit_99', {
 				user: this.props.userId
 			} );
 		}
-		if ( cartItem.product_slug === 'jetpack_business' ) {
+		if ( cartItem.product_slug === PLAN_JETPACK_BUSINESS ) {
 			this.props.recordTracksEvent( 'calypso_jpc_plans_submit_299', {
 				user: this.props.userId
 			} );
