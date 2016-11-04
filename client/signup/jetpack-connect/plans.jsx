@@ -15,11 +15,12 @@ import observe from 'lib/mixins/data-observe';
 import { recordTracksEvent } from 'state/analytics/actions';
 import { getCurrentUser } from 'state/current-user/selectors';
 import * as upgradesActions from 'lib/upgrades/actions';
-import { userCan } from 'lib/site/utils';
 import { selectPlanInAdvance, goBackToWpAdmin, completeFlow } from 'state/jetpack-connect/actions';
 import QueryPlans from 'components/data/query-plans';
 import QuerySitePlans from 'components/data/query-site-plans';
 import { isRequestingPlans, getPlanBySlug } from 'state/plans/selectors';
+import { getSelectedSite } from 'state/ui/selectors';
+import { canCurrentUser } from 'state/current-user/selectors';
 import {
 	getFlowType,
 	getSiteSelectedPlan,
@@ -197,9 +198,9 @@ const Plans = React.createClass( {
 } );
 
 export default connect(
-	( state, props ) => {
+	( state ) => {
 		const user = getCurrentUser( state );
-		const selectedSite = props.sites ? props.sites.getSelectedSite() : null;
+		const selectedSite = getSelectedSite( state );
 		const selectedSiteSlug = selectedSite ? selectedSite.slug : null;
 
 		const selectedPlan = getSiteSelectedPlan( state, selectedSiteSlug ) || getGlobalSelectedPlan( state );
@@ -212,7 +213,7 @@ export default connect(
 			sitePlans: getPlansBySite( state, selectedSite ),
 			jetpackConnectAuthorize: getAuthorizationData( state ),
 			userId: user ? user.ID : null,
-			canPurchasePlans: selectedSite ? userCan( 'manage_options', selectedSite ) : true,
+			canPurchasePlans: canCurrentUser( state, selectedSite.ID, 'manage_options' ),
 			flowType: getFlowType( state, selectedSite && selectedSite.slug ),
 			isRequestingPlans: isRequestingPlans( state ),
 			getPlanBySlug: searchPlanBySlug,
