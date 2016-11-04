@@ -3,7 +3,8 @@
  */
 import { connect } from 'react-redux';
 import page from 'page';
-import React from 'react';
+import React, { Component, PropTypes } from 'react';
+import { localize } from 'i18n-calypso';
 import { bindActionCreators } from 'redux';
 
 /**
@@ -11,7 +12,6 @@ import { bindActionCreators } from 'redux';
  */
 import PlansGrid from './plans-grid';
 import { getPlansBySite } from 'state/sites/plans/selectors';
-import observe from 'lib/mixins/data-observe';
 import { recordTracksEvent } from 'state/analytics/actions';
 import { getCurrentUser } from 'state/current-user/selectors';
 import * as upgradesActions from 'lib/upgrades/actions';
@@ -32,27 +32,26 @@ import {
 const CALYPSO_REDIRECTION_PAGE = '/posts/';
 const CALYPSO_PLANS_PAGE = '/plans/my-plan/';
 
-const Plans = React.createClass( {
-	mixins: [ observe( 'sites' ) ],
+class Plans extends Component {
+	constructor() {
+		super();
+		this.selectPlan = this.selectPlan.bind( this );
+		this.redirecting = false;
+	}
 
-	propTypes: {
-		sites: React.PropTypes.object,
-		sitePlans: React.PropTypes.object.isRequired,
-		intervalType: React.PropTypes.string
-	},
+	static propTypes = {
+		cart: PropTypes.object.isRequired,
+		context: PropTypes.object.isRequired,
+		destinationType: PropTypes.string,
+		sitePlans: PropTypes.object.isRequired,
+		showJetpackFreePlan: PropTypes.bool,
+		intervalType: PropTypes.string
+	};
 
-	getDefaultProps() {
-		return {
-			intervalType: 'yearly',
-			siteSlug: '*'
-		};
-	},
-
-	getInitialState: function getInitialState() {
-		return {
-			redirecting: false
-		};
-	},
+	static defaultProps = {
+		intervalType: 'yearly',
+		siteSlug: '*'
+	};
 
 	componentDidMount() {
 		if ( this.hasPreSelectedPlan() ) {
@@ -62,28 +61,28 @@ const Plans = React.createClass( {
 				user: this.props.userId
 			} );
 		}
-	},
+	}
 
 	componentDidUpdate() {
-		if ( this.hasPlan( this.props.selectedSite ) && ! this.state.redirecting ) {
+		if ( this.hasPlan( this.props.selectedSite ) && ! this.redirecting ) {
 			this.redirect( CALYPSO_PLANS_PAGE );
 		}
-		if ( ! this.props.canPurchasePlans && ! this.state.redirecting ) {
+		if ( ! this.props.canPurchasePlans && ! this.redirecting ) {
 			this.redirect( CALYPSO_REDIRECTION_PAGE );
 		}
 
 		if ( ! this.props.isRequestingPlans &&
 			( this.props.flowType === 'pro' || this.props.flowType === 'premium' ) &&
-			! this.state.redirecting ) {
+			! this.redirecting ) {
 			return this.autoselectPlan();
 		}
-	},
+	}
 
 	redirect( path ) {
 		page.redirect( path + this.props.selectedSite.slug );
-		this.setState( { redirecting: true } );
+		this.redirecting = true;
 		this.props.completeFlow();
-	},
+	}
 
 	hasPreSelectedPlan() {
 		if ( this.props.flowType === 'pro' || this.props.flowType === 'premium' || this.props.flowType === 'personal' ) {
@@ -91,13 +90,13 @@ const Plans = React.createClass( {
 		}
 
 		return !! this.props.selectedPlan;
-	},
+	}
 
 	hasPlan( site ) {
 		return site &&
 			site.plan &&
 			( site.plan.product_slug === 'jetpack_business' || site.plan.product_slug === 'jetpack_premium' );
-	},
+	}
 
 	autoselectPlan() {
 		if ( ! this.props.showFirst ) {
@@ -120,7 +119,7 @@ const Plans = React.createClass( {
 				this.selectFreeJetpackPlan();
 			}
 		}
-	},
+	}
 
 	selectFreeJetpackPlan() {
 		// clears whatever we had stored in local cache
@@ -133,10 +132,10 @@ const Plans = React.createClass( {
 		} else {
 			const { queryObject } = this.props.jetpackConnectAuthorize;
 			this.props.goBackToWpAdmin( queryObject.redirect_after_auth );
-			this.setState( { redirecting: true } );
+			this.redirecting = true;
 			this.props.completeFlow();
 		}
-	},
+	}
 
 	selectPlan( cartItem ) {
 		const checkoutPath = `/checkout/${ this.props.selectedSite.slug }`;
@@ -157,10 +156,10 @@ const Plans = React.createClass( {
 			} );
 		}
 		upgradesActions.addItem( cartItem );
-		this.setState( { redirecting: true } );
+		this.redirecting = true;
 		this.props.completeFlow();
 		page( checkoutPath );
-	},
+	}
 
 	storeSelectedPlan( cartItem ) {
 		this.props.recordTracksEvent( 'calypso_jpc_plans_store_plan', {
@@ -171,10 +170,10 @@ const Plans = React.createClass( {
 			cartItem ? cartItem.product_slug : 'free',
 			this.props.siteSlug,
 		);
-	},
+	}
 
 	render() {
-		if ( this.state.redirecting ||
+		if ( this.redirecting ||
 			this.hasPreSelectedPlan() ||
 			( ! this.props.showFirst && ! this.props.canPurchasePlans ) ||
 			( ! this.props.showFirst && this.hasPlan( this.props.selectedSite ) )
@@ -195,10 +194,10 @@ const Plans = React.createClass( {
 			</div>
 		);
 	}
-} );
+}
 
 export default connect(
-	( state ) => {
+	state => {
 		const user = getCurrentUser( state );
 		const selectedSite = getSelectedSite( state );
 		const selectedSiteSlug = selectedSite ? selectedSite.slug : null;
@@ -231,4 +230,4 @@ export default connect(
 			}
 		);
 	}
-)( Plans );
+)( localize( Plans ) );
