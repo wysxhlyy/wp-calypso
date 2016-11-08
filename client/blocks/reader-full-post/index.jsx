@@ -68,6 +68,10 @@ export class FullPostView extends React.Component {
 			this[ fn ] = this[ fn ].bind( this );
 		} );
 		this.hasScrolledToCommentAnchor = false;
+		this.state = {
+			hasLoaded: false,
+			hasSentPageView: false
+		};
 	}
 
 	componentDidMount() {
@@ -76,8 +80,6 @@ export class FullPostView extends React.Component {
 		this.parseEmoji();
 
 		// Send page view
-		this.hasSentPageView = false;
-		this.hasLoaded = false;
 		this.attemptToSendPageView();
 
 		this.checkForCommentAnchor();
@@ -88,18 +90,8 @@ export class FullPostView extends React.Component {
 		}
 	}
 
-	componentDidUpdate( prevProps ) {
+	componentDidUpdate() {
 		this.parseEmoji();
-
-		// Send page view if applicable
-		if ( get( prevProps, 'post.ID' ) !== get( this.props, 'post.ID' ) ||
-			get( prevProps, 'feed.ID' ) !== get( this.props, 'feed.ID' ) ||
-			get( prevProps, 'site.ID' ) !== get( this.props, 'site.ID' ) ) {
-			this.hasSentPageView = false;
-			this.hasLoaded = false;
-			this.attemptToSendPageView();
-		}
-
 		this.checkForCommentAnchor();
 
 		// If we have a comment anchor, scroll to comments
@@ -109,6 +101,17 @@ export class FullPostView extends React.Component {
 	}
 
 	componentWillReceiveProps( newProps ) {
+		// Send page view if applicable
+		if ( get( newProps, 'post.ID' ) !== get( this.props, 'post.ID' ) ||
+			get( newProps, 'feed.ID' ) !== get( this.props, 'feed.ID' ) ||
+			get( newProps, 'site.ID' ) !== get( this.props, 'site.ID' ) ) {
+			this.setState( {
+				hasLoaded: false,
+				hasSentPageView: false
+			} );
+			this.attemptToSendPageView();
+		}
+
 		if ( newProps.shouldShowComments ) {
 			this.hasScrolledToCommentAnchor = false;
 			this.checkForCommentAnchor();
@@ -215,19 +218,20 @@ export class FullPostView extends React.Component {
 		} );
 	}
 
-	attemptToSendPageView() {
-		const { post, site } = this.props;
+	attemptToSendPageView( props = this.props ) {
+		const { post, site } = props;
 
-		if ( post && post._state !== 'pending' &&
+		if ( post &&
+			post._state !== 'pending' &&
 			site && site.state === SiteState.COMPLETE &&
-			! this.hasSentPageView ) {
+			! this.state.hasSentPageView ) {
 			PostStoreActions.markSeen( post );
-			this.hasSentPageView = true;
+			this.setState( { hasSentPageView: true } );
 		}
 
-		if ( ! this.hasLoaded && post && post._state !== 'pending' ) {
+		if ( ! this.state.hasLoaded && post && post._state !== 'pending' ) {
 			recordTrackForPost( 'calypso_reader_article_opened', post );
-			this.hasLoaded = true;
+			this.setState( { hasLoaded: true } );
 		}
 	}
 
