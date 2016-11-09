@@ -153,6 +153,16 @@ EmailFollowersStore.dispatchToken = Dispatcher.register( function( payload ) {
 			namespace = getNamespace( action.fetchOptions );
 			_fetchingFollowersByNamespace[ namespace ] = false;
 			if ( ! action.error ) {
+				// If the number of followers we get back in any request is less than the per page request,
+				// assume that the follower totals returned from the API are incorrect due to caching and
+				// set the total number of followers on the client to the number of followers we have now.
+				//
+				// This minimizes issues with inifinite fetching of followers.
+				if ( action.data.subscribers.length < action.fetchOptions.max ) {
+					action.data.total_email = _followerIDsByNamespace[ namespace ]
+						? _followerIDsByNamespace[ namespace ].size
+						: 0;
+				}
 				updateFollowers( action.fetchOptions, action.data.subscribers, action.data.total_email );
 				EmailFollowersStore.emitChange();
 			}
