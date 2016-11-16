@@ -130,6 +130,7 @@ export const PluginPanel = React.createClass( {
 
 		const premiumPlugins = defaultPremiumPlugins.map( interpolateLink );
 		const businessPlugins = defaultBusinessPlugins.map( interpolateLink );
+		const categoryId = category ? category : 'all';
 
 		return (
 			<div className="wpcom-plugin-panel">
@@ -140,7 +141,7 @@ export const PluginPanel = React.createClass( {
 							<NavItem
 								key={ filterItem.id }
 								path={ filterItem.path }
-								selected={ filterItem.id === category }>
+								selected={ filterItem.id === categoryId }>
 								{ filterItem.title }
 							</NavItem>
 						) ) }
