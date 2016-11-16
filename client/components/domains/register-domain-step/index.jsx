@@ -13,8 +13,8 @@ import noop from 'lodash/noop';
 import startsWith from 'lodash/startsWith';
 import page from 'page';
 import qs from 'qs';
-import endsWith from 'lodash/endsWith';
 import { connect } from 'react-redux';
+import { endsWith } from 'lodash';
 
 /**
  * Internal dependencies
@@ -529,15 +529,10 @@ const RegisterDomainStep = React.createClass( {
 		switch ( error.code ) {
 			case 'dotblog_domain':
 				message = this.translate(
-					'.blog domains are not available yet. {{a}}Sign up{{/a}} to get updates on the launch.', {
+					'Coming soon! {{strong}}.blog{{/strong}} domains will be available on {{strong}}November 21st{{/strong}}.',
+					{
 						components: {
-							a: <a
-								target="_blank"
-								rel="noopener noreferrer"
-								href={ `https://dotblog.wordpress.com/
-									?email=${ this.props.currentUser && encodeURIComponent( this.props.currentUser.email ) || '' }
-									&domain=${ domain }`
-									} />
+							strong: <strong />
 						}
 					}
 				);

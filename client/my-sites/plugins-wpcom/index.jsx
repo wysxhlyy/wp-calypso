@@ -1,11 +1,14 @@
+/**
+ * External dependencies
+ */
 import React from 'react';
 
+/**
+ * Internal dependencies
+ */
 import PluginPanel from 'my-sites/plugins-wpcom/plugin-panel';
 
-export const WpcomPluginsPanel = React.createClass( {
-	render() {
-		return <PluginPanel filter={ this.props.filter } search={ this.props.search } />;
-	}
-} );
+export const WpcomPluginsPanel = ( { filter, search } ) =>
+	<PluginPanel { ...{ filter, search } } />;
 
 export default WpcomPluginsPanel;

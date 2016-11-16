@@ -41,10 +41,14 @@ import {
  */
 const linkInterpolator = replacements => plugin => {
 	const { descriptionLink: link } = plugin;
-	const descriptionLink = Object.keys( replacements )
-		.reduce( ( s, r ) => s.replace( new RegExp( `{${ r }}` ), replacements[ r ] ), link );
+	const descriptionLink = Object
+		.keys( replacements )
+		.reduce(
+			( s, r ) => s.replace( new RegExp( `{${ r }}` ), replacements[ r ] ),
+			link
+		);
 
-	return Object.assign( {}, plugin, { descriptionLink } );
+	return { ...plugin, descriptionLink };
 };
 
 const filterToCategory = {
@@ -91,7 +95,8 @@ export const PluginPanel = React.createClass( {
 			siteSlug,
 			filter,
 			search,
-			doSearch
+			doSearch,
+			translate
 		} = this.props;
 
 		const standardPluginsLink = `/plugins/standard/${ siteSlug }`;
@@ -137,20 +142,20 @@ export const PluginPanel = React.createClass( {
 							</NavItem>
 						) ) }
 					</NavTabs>
-					<Search pinned fitsContainer onSearch={ doSearch } placeholder={ this.translate( 'Search' ) } delaySearch />
+					<Search pinned fitsContainer onSearch={ doSearch } placeholder={ translate( 'Search' ) } delaySearch />
 				</SectionNavigation>
 				<Card compact className="plugins-wpcom__header">
 					<div className="plugins-wpcom__header-text">
-						<span className="plugins-wpcom__header-title">{ this.translate( 'Included Plugins' ) }</span>
+						<span className="plugins-wpcom__header-title">{ translate( 'Included Plugins' ) }</span>
 						<span className="plugins-wpcom__header-subtitle">
-							{ this.translate( 'Every plan includes a set of plugins specially tailored to supercharge your site.' ) }
+							{ translate( 'Every plan includes a set of plugins specially tailored to supercharge your site.' ) }
 						</span>
 					</div>
 					<img className="plugins-wpcom__header-image" src="/calypso/images/plugins/plugins_hero.svg" />
 				</Card>
 				<StandardPluginsPanel plugins={ standardPlugins } displayCount={ 9 } />
 				<Card className="wpcom-plugin-panel__panel-footer" href={ standardPluginsLink }>
-					{ this.translate( 'View all standard plugins' ) }
+					{ translate( 'View all standard plugins' ) }
 				</Card>
 				<PremiumPluginsPanel plugins={ premiumPlugins } isActive={ hasPremium } { ...{ purchaseLink } } />
 				<BusinessPluginsPanel plugins={ businessPlugins } isActive={ hasBusiness } { ...{ purchaseLink } } />
