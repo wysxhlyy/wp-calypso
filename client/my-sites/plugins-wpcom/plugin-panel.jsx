@@ -3,13 +3,19 @@
  */
 import React from 'react';
 import { connect } from 'react-redux';
+import includes from 'lodash/includes';
 import get from 'lodash/get';
 import { localize } from 'i18n-calypso';
 
 /**
  * Internal dependencies
  */
+import urlSearch from 'lib/mixins/url-search/component';
 import Card from 'components/card';
+import SectionNavigation from 'components/section-nav';
+import NavTabs from 'components/section-nav/tabs';
+import NavItem from 'components/section-nav/item';
+import Search from 'components/search';
 import {
 	getSelectedSite,
 	getSelectedSiteId
@@ -41,11 +47,51 @@ const linkInterpolator = replacements => plugin => {
 	return Object.assign( {}, plugin, { descriptionLink } );
 };
 
+const filterToCategory = {
+	traffic: 'Traffic Growth'
+};
+
 export const PluginPanel = React.createClass( {
+	getFilters() {
+		const { translate, siteSlug } = this.props;
+		const siteFilter = siteSlug ? '/' + siteSlug : '';
+
+		return [
+			{
+				title: translate( 'All', { context: 'Filter label for plugins list' } ),
+				path: '/plugins' + siteFilter,
+				id: 'all'
+			},
+			{
+				title: translate( 'Traffic Growth', { context: 'Filter label for plugins list' } ),
+				path: '/plugins/traffic' + siteFilter,
+				id: 'traffic'
+			},
+			{
+				title: translate( 'Content', { context: 'Filter label for plugins list' } ),
+				path: '/plugins/content' + siteFilter,
+				id: 'content'
+			},
+			{
+				title: translate( 'Appearance', { context: 'Filter label for plugins list' } ),
+				path: '/plugins/appearance' + siteFilter,
+				id: 'appearance'
+			},
+			{
+				title: translate( 'Security', { context: 'Filter label for plugins list' } ),
+				path: '/plugins/security' + siteFilter,
+				id: 'security'
+			}
+		];
+	},
+
 	render() {
 		const {
 			plan,
-			siteSlug
+			siteSlug,
+			filter,
+			search,
+			doSearch
 		} = this.props;
 
 		const standardPluginsLink = `/plugins/standard/${ siteSlug }`;
@@ -56,13 +102,43 @@ export const PluginPanel = React.createClass( {
 
 		const interpolateLink = linkInterpolator( { siteSlug } );
 
-		const standardPlugins = defaultStandardPlugins.map( interpolateLink );
+		let standardPlugins = defaultStandardPlugins.map( interpolateLink );
+		if ( filter !== 'all' ) {
+			const filterPlugins = plugin => {
+				return plugin.category === filterToCategory[ filter ];
+			};
+
+			standardPlugins = standardPlugins.filter( filterPlugins );
+		}
+
+		if ( search ) {
+			const searchPlugins = plugin => {
+				return includes( plugin.name.toLowerCase(), search.toLowerCase() ) ||
+					includes( plugin.description.toLowerCase(), search.toLowerCase() );
+			};
+
+			standardPlugins = standardPlugins.filter( searchPlugins );
+		}
+
 		const premiumPlugins = defaultPremiumPlugins.map( interpolateLink );
 		const businessPlugins = defaultBusinessPlugins.map( interpolateLink );
 
 		return (
 			<div className="wpcom-plugin-panel">
 				<PageViewTracker path="/plugins/:site" title="Plugins > WPCOM Site" />
+				<SectionNavigation>
+					<NavTabs>
+						{ this.getFilters().map( filterItem => (
+							<NavItem
+								key={ filterItem.id }
+								path={ filterItem.path }
+								selected={ filterItem.id === filter }>
+								{ filterItem.title }
+							</NavItem>
+						) ) }
+					</NavTabs>
+					<Search pinned fitsContainer onSearch={ doSearch } placeholder={ this.translate( 'Search' ) } delaySearch />
+				</SectionNavigation>
 				<Card compact className="plugins-wpcom__header">
 					<div className="plugins-wpcom__header-text">
 						<span className="plugins-wpcom__header-title">{ this.translate( 'Included Plugins' ) }</span>
@@ -88,4 +164,4 @@ const mapStateToProps = state => ( {
 	siteSlug: getSiteSlug( state, getSelectedSiteId( state ) )
 } );
 
-export default connect( mapStateToProps )( localize( PluginPanel ) );
+export default connect( mapStateToProps )( localize( urlSearch( PluginPanel ) ) );

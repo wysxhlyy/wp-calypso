@@ -22,7 +22,7 @@ module.exports = function() {
 
 		page( '/plugins', controller.siteSelection, controller.navigation, pluginsController.validateFilters.bind( null, 'all' ), pluginsController.plugins.bind( null, 'all' ), controller.sites );
 
-		[ 'active', 'inactive', 'updates' ].forEach( function( filter ) {
+		[ 'active', 'inactive', 'updates', 'traffic', 'content', 'appearance', 'security' ].forEach( function( filter ) {
 			page( '/plugins/' + filter + '/:site_id?', controller.siteSelection, controller.navigation, pluginsController.validateFilters.bind( null, filter ), pluginsController.jetpackCanUpdate.bind( null, filter ), pluginsController.plugins.bind( null, filter ) );
 		} );
 
