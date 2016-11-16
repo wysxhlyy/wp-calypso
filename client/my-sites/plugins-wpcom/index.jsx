@@ -8,7 +8,7 @@ import React from 'react';
  */
 import PluginPanel from 'my-sites/plugins-wpcom/plugin-panel';
 
-export const WpcomPluginsPanel = ( { filter, search } ) =>
-	<PluginPanel { ...{ filter, search } } />;
+export const WpcomPluginsPanel = ( { category, search } ) =>
+	<PluginPanel { ...{ category, search } } />;
 
 export default WpcomPluginsPanel;

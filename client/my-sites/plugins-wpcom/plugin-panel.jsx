@@ -3,8 +3,10 @@
  */
 import React from 'react';
 import { connect } from 'react-redux';
-import includes from 'lodash/includes';
-import get from 'lodash/get';
+import {
+	includes,
+	get
+} from 'lodash';
 import { localize } from 'i18n-calypso';
 
 /**
@@ -59,6 +61,7 @@ export const PluginPanel = React.createClass( {
 	getFilters() {
 		const { translate, siteSlug } = this.props;
 		const siteFilter = siteSlug ? '/' + siteSlug : '';
+		const basePath = '/plugins/category';
 
 		return [
 			{
@@ -68,22 +71,22 @@ export const PluginPanel = React.createClass( {
 			},
 			{
 				title: translate( 'Traffic Growth', { context: 'Filter label for plugins list' } ),
-				path: '/plugins/traffic' + siteFilter,
+				path: basePath + '/traffic' + siteFilter,
 				id: 'traffic'
 			},
 			{
 				title: translate( 'Content', { context: 'Filter label for plugins list' } ),
-				path: '/plugins/content' + siteFilter,
+				path: basePath + '/content' + siteFilter,
 				id: 'content'
 			},
 			{
 				title: translate( 'Appearance', { context: 'Filter label for plugins list' } ),
-				path: '/plugins/appearance' + siteFilter,
+				path: basePath + '/appearance' + siteFilter,
 				id: 'appearance'
 			},
 			{
 				title: translate( 'Security', { context: 'Filter label for plugins list' } ),
-				path: '/plugins/security' + siteFilter,
+				path: basePath + '/security' + siteFilter,
 				id: 'security'
 			}
 		];
@@ -93,7 +96,7 @@ export const PluginPanel = React.createClass( {
 		const {
 			plan,
 			siteSlug,
-			filter,
+			category,
 			search,
 			doSearch,
 			translate
@@ -108,9 +111,9 @@ export const PluginPanel = React.createClass( {
 		const interpolateLink = linkInterpolator( { siteSlug } );
 
 		let standardPlugins = defaultStandardPlugins.map( interpolateLink );
-		if ( filter !== 'all' ) {
+		if ( category ) {
 			const filterPlugins = plugin => {
-				return plugin.category === filterToCategory[ filter ];
+				return plugin.category === filterToCategory[ category ];
 			};
 
 			standardPlugins = standardPlugins.filter( filterPlugins );
@@ -137,7 +140,7 @@ export const PluginPanel = React.createClass( {
 							<NavItem
 								key={ filterItem.id }
 								path={ filterItem.path }
-								selected={ filterItem.id === filter }>
+								selected={ filterItem.id === category }>
 								{ filterItem.title }
 							</NavItem>
 						) ) }
