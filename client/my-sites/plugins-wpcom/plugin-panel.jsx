@@ -5,7 +5,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import {
 	includes,
-	get
+	get,
+	overSome
 } from 'lodash';
 import { localize } from 'i18n-calypso';
 
@@ -57,6 +58,23 @@ const filterToCategory = {
 	traffic: 'Traffic Growth'
 };
 
+const filterPlugins = category => plugin => {
+	if ( category && category !== 'all' ) {
+		return plugin.category === filterToCategory[ category ];
+	}
+
+	return true;
+};
+
+const searchPlugins = search => overSome(
+	( { name } ) => {
+		return includes( name.toLowerCase(), search.toLowerCase() );
+	},
+	( { description } ) => {
+		return includes( description.toLowerCase(), search.toLowerCase() );
+	}
+);
+
 export const PluginPanel = React.createClass( {
 	getFilters() {
 		const { translate, siteSlug } = this.props;
@@ -94,46 +112,32 @@ export const PluginPanel = React.createClass( {
 
 	render() {
 		const {
-			plan,
 			siteSlug,
-			category,
-			search,
+			category = 'all',
+			search = '',
 			doSearch,
-			translate
+			translate,
+			hasBusiness,
+			hasPremium,
+			standardPluginsLink,
+			purchaseLink
 		} = this.props;
-
-		const standardPluginsLink = `/plugins/standard/${ siteSlug }`;
-		const purchaseLink = `/plans/${ siteSlug }`;
-
-		const hasBusiness = isBusiness( plan ) || isEnterprise( plan );
-		const hasPremium = hasBusiness || isPremium( plan );
 
 		const interpolateLink = linkInterpolator( { siteSlug } );
 
-		let standardPlugins = defaultStandardPlugins.map( interpolateLink );
-		if ( category ) {
-			const filterPlugins = plugin => {
-				return plugin.category === filterToCategory[ category ];
-			};
+		const searchByCategory = searchPlugins( search );
+		const filterByCategory = filterPlugins( category );
 
-			standardPlugins = standardPlugins.filter( filterPlugins );
-		}
-
-		if ( search ) {
-			const searchPlugins = plugin => {
-				return includes( plugin.name.toLowerCase(), search.toLowerCase() ) ||
-					includes( plugin.description.toLowerCase(), search.toLowerCase() );
-			};
-
-			standardPlugins = standardPlugins.filter( searchPlugins );
-		}
+		const standardPlugins = defaultStandardPlugins
+			.filter( searchByCategory )
+			.filter( filterByCategory )
+			.map( interpolateLink );
 
 		const premiumPlugins = defaultPremiumPlugins.map( interpolateLink );
 		const businessPlugins = defaultBusinessPlugins.map( interpolateLink );
-		const categoryId = category ? category : 'all';
 
 		return (
-			<div className="wpcom-plugin-panel">
+			<div className="plugins-wpcom__panel">
 				<PageViewTracker path="/plugins/:site" title="Plugins > WPCOM Site" />
 				<SectionNavigation>
 					<NavTabs>
@@ -141,7 +145,7 @@ export const PluginPanel = React.createClass( {
 							<NavItem
 								key={ filterItem.id }
 								path={ filterItem.path }
-								selected={ filterItem.id === categoryId }>
+								selected={ filterItem.id === category }>
 								{ filterItem.title }
 							</NavItem>
 						) ) }
@@ -158,7 +162,7 @@ export const PluginPanel = React.createClass( {
 					<img className="plugins-wpcom__header-image" src="/calypso/images/plugins/plugins_hero.svg" />
 				</Card>
 				<StandardPluginsPanel plugins={ standardPlugins } displayCount={ 9 } />
-				<Card className="wpcom-plugin-panel__panel-footer" href={ standardPluginsLink }>
+				<Card className="plugins-wpcom__panel-footer" href={ standardPluginsLink }>
 					{ translate( 'View all standard plugins' ) }
 				</Card>
 				<PremiumPluginsPanel plugins={ premiumPlugins } isActive={ hasPremium } { ...{ purchaseLink } } />
@@ -168,9 +172,19 @@ export const PluginPanel = React.createClass( {
 	}
 } );
 
-const mapStateToProps = state => ( {
-	plan: get( getSelectedSite( state ), 'plan', {} ),
-	siteSlug: getSiteSlug( state, getSelectedSiteId( state ) )
-} );
+const mapStateToProps = state => {
+	const plan = get( getSelectedSite( state ), 'plan', {} );
+	const hasBusiness = isBusiness( plan ) || isEnterprise( plan );
+	const siteSlug = getSiteSlug( state, getSelectedSiteId( state ) );
+
+	return {
+		plan,
+		hasBusiness,
+		hasPremium: hasBusiness || isPremium( plan ),
+		siteSlug: getSiteSlug( state, getSelectedSiteId( state ) ),
+		standardPluginsLink: `/plugins/standard/${ siteSlug }`,
+		purchaseLink: `/plans/${ siteSlug }`
+	};
+};
 
 export default connect( mapStateToProps )( localize( urlSearch( PluginPanel ) ) );

@@ -50,11 +50,11 @@
 // Special styles for displaying only two plugins
 .wpcom-plugins__business-panel .wpcom-plugins__plugin-item {
 	width: 100%;
-	
+
 	&:last-child {
 		border-right: none;
 	}
-	
+
 	@include breakpoint( ">960px" ) {
 		width: 50%;
 		border-right: 1px solid lighten( $gray, 20% );
@@ -114,7 +114,7 @@
 	margin-bottom: 0;
 }
 
-.wpcom-plugin-panel button.is-active-plugin {
+.plugins-wpcom__panel button.is-active-plugin {
 	color: $alert-green;
 
 	&:hover {
@@ -126,7 +126,7 @@
 	border-bottom: none;
 }
 
-.wpcom-plugin-panel__panel-footer {
+.plugins-wpcom__panel-footer {
 	padding-top: 14px;
 	padding-bottom: 14px;
 }
@@ -146,7 +146,7 @@
 	}
 }
 
-.wpcom-plugin-panel .notice {
+.plugins-wpcom__panel .notice {
 	margin: 0;
 }
 
