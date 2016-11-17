@@ -121,12 +121,9 @@ export const PluginPanel = React.createClass( {
 
 		const interpolateLink = linkInterpolator( { siteSlug } );
 
-		const searchByCategory = searchPlugins( search );
-		const filterByCategory = filterPlugins( category );
-
 		const standardPlugins = defaultStandardPlugins
-			.filter( searchByCategory )
-			.filter( filterByCategory )
+			.filter( searchPlugins( search ) )
+			.filter( filterPlugins( category ) )
 			.map( interpolateLink );
 
 		const premiumPlugins = defaultPremiumPlugins.map( interpolateLink );
