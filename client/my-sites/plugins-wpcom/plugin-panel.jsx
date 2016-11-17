@@ -67,12 +67,8 @@ const filterPlugins = category => plugin => {
 };
 
 const searchPlugins = search => overSome(
-	( { name } ) => {
-		return includes( name.toLowerCase(), search.toLowerCase() );
-	},
-	( { description } ) => {
-		return includes( description.toLowerCase(), search.toLowerCase() );
-	}
+	( { name } ) => includes( name.toLocaleLowerCase(), search.toLocaleLowerCase() ),
+	( { description } ) => includes( description.toLocaleLowerCase(), search.toLocaleLowerCase() )
 );
 
 export const PluginPanel = React.createClass( {
