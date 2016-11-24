@@ -16,9 +16,7 @@ import Upload from 'my-sites/themes/theme-upload';
 import trackScrollPage from 'lib/track-scroll-page';
 import { PER_PAGE } from 'state/themes/themes-list/constants';
 import {
-	fetchThemes,
-	incrementThemesPage,
-	query
+	requestThemes
 } from 'state/themes/actions';
 import { getAnalyticsData } from './helpers';
 
@@ -96,17 +94,14 @@ export function fetchThemeData( context, next, shouldUseCache = false ) {
 		return next();
 	}
 
-	const queryParams = {
+	const query = {
 		search: context.query.s,
 		tier: context.params.tier,
 		filter: compact( [ context.params.filter, context.params.vertical ] ).join( ',' ),
-		page: 0,
-		perPage: PER_PAGE,
+		page: 1,
+		number: PER_PAGE,
 	};
 	const cacheKey = context.path;
-
-	context.store.dispatch( query( queryParams ) );
-	context.store.dispatch( incrementThemesPage( false ) );
 
 	if ( shouldUseCache ) {
 		const cachedData = themesQueryCache.get( cacheKey );
@@ -118,7 +113,7 @@ export function fetchThemeData( context, next, shouldUseCache = false ) {
 		}
 	}
 
-	context.store.dispatch( fetchThemes( false ) )
+	context.store.dispatch( requestThemes( query ) )
 		.then( action => {
 			if ( shouldUseCache ) {
 				const timestamp = Date.now();
