@@ -17,7 +17,7 @@ import Gridicon from 'components/gridicon';
 import Tooltip from 'components/tooltip';
 import config from 'config';
 
-class PeopleSectionHeader extends Component {
+export class PeopleSectionHeader extends Component {
 	static propTypes = {
 		translate: PropTypes.func,
 		label: React.PropTypes.string.isRequired,
@@ -31,12 +31,9 @@ class PeopleSectionHeader extends Component {
 		isFollower: false,
 	};
 
-	constructor() {
-		super( ...arguments );
-		this.state = {
-			addPeopleTooltip: false
-		};
-	}
+	state = {
+		addPeopleTooltip: false,
+	};
 
 	showAddTooltip = () => {
 		this.setState( { addPeopleTooltip: true } );
@@ -105,5 +102,4 @@ class PeopleSectionHeader extends Component {
 	}
 }
 
-export { PeopleSectionHeader };
 export default localize( PeopleSectionHeader );
