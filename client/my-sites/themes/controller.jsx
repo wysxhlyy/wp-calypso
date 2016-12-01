@@ -14,10 +14,8 @@ import MultiSiteComponent from 'my-sites/themes/multi-site';
 import LoggedOutComponent from './logged-out';
 import Upload from 'my-sites/themes/theme-upload';
 import trackScrollPage from 'lib/track-scroll-page';
-import { PER_PAGE } from 'state/themes/themes-list/constants';
-import {
-	requestThemes
-} from 'state/themes/actions';
+import { DEFAULT_THEME_QUERY } from 'state/themes/constants';
+import { requestThemes } from 'state/themes/actions';
 import { getAnalyticsData } from './helpers';
 
 const debug = debugFactory( 'calypso:themes' );
@@ -99,7 +97,7 @@ export function fetchThemeData( context, next, shouldUseCache = false ) {
 		tier: context.params.tier,
 		filter: compact( [ context.params.filter, context.params.vertical ] ).join( ',' ),
 		page: 1,
-		number: PER_PAGE,
+		number: DEFAULT_THEME_QUERY.number,
 	};
 	const cacheKey = context.path;
 
@@ -113,7 +111,7 @@ export function fetchThemeData( context, next, shouldUseCache = false ) {
 		}
 	}
 
-	context.store.dispatch( requestThemes( query ) )
+	context.store.dispatch( requestThemes( 'wpcom', query ) )
 		.then( action => {
 			if ( shouldUseCache ) {
 				const timestamp = Date.now();
