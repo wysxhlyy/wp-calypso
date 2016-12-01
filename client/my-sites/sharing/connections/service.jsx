@@ -153,6 +153,7 @@ class SharingService extends Component {
 			this.props.errorNotice( this.props.translate( 'The connection could not be made because no account was selected.', {
 				context: 'Sharing: Publicize connection confirmation'
 			} ) );
+			this.setState( { isConnecting: false } );
 			this.props.recordGoogleEvent( 'Sharing', 'Clicked Cancel Button in Modal', this.props.service.ID );
 		}
 
