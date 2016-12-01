@@ -18,9 +18,7 @@ import { createReduxStore } from 'state';
 import EmptyComponent from 'test/helpers/react/empty-component';
 import useMockery from 'test/helpers/use-mockery';
 import {
-	incrementThemesPage,
-	query,
-	legacyReceiveThemes,
+	receiveThemes,
 	receiveServerError
 } from 'state/themes/actions';
 
@@ -85,8 +83,6 @@ describe( 'logged-out', () => {
 					screenshot: 'https://i1.wp.com/theme.wordpress.com/wp-content/themes/pub/karuna/screenshot.png'
 				}
 			];
-
-			this.queryParams = { perPage: 5, page: 1, filter: '', id: 1 };
 		} );
 
 		beforeEach( () => {
@@ -109,9 +105,7 @@ describe( 'logged-out', () => {
 		} );
 
 		it( 'renders without error when themes are present', () => {
-			this.store.dispatch( query( this.queryParams ) );
-			this.store.dispatch( incrementThemesPage( false ) );
-			this.store.dispatch( legacyReceiveThemes( { themes: this.themes }, false, this.queryParams ) );
+			this.store.dispatch( receiveThemes( this.themes, 'wpcom' ) );
 
 			let markup;
 			assert.doesNotThrow( () => {
@@ -124,9 +118,7 @@ describe( 'logged-out', () => {
 		} );
 
 		it( 'renders without error when theme fetch fails', () => {
-			this.store.dispatch( query( this.queryParams ) );
-			this.store.dispatch( incrementThemesPage( false ) );
-			this.store.dispatch( receiveServerError( 'Error' ) );
+			this.store.dispatch( receiveServerError( 'Error' ) ); // FIXME: Use new error action
 
 			let markup;
 			assert.doesNotThrow( () => {
