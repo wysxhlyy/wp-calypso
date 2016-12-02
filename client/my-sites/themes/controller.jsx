@@ -15,7 +15,8 @@ import LoggedOutComponent from './logged-out';
 import Upload from 'my-sites/themes/theme-upload';
 import trackScrollPage from 'lib/track-scroll-page';
 import { DEFAULT_THEME_QUERY } from 'state/themes/constants';
-import { requestThemes } from 'state/themes/actions';
+import { requestThemes, receiveThemes } from 'state/themes/actions';
+import { getThemesForQuery } from 'state/themes/selectors';
 import { getAnalyticsData } from './helpers';
 
 const debug = debugFactory( 'calypso:themes' );
@@ -92,6 +93,7 @@ export function fetchThemeData( context, next, shouldUseCache = false ) {
 		return next();
 	}
 
+	const siteId = 'wpcom';
 	const query = {
 		search: context.query.s,
 		tier: context.params.tier,
@@ -105,17 +107,18 @@ export function fetchThemeData( context, next, shouldUseCache = false ) {
 		const cachedData = themesQueryCache.get( cacheKey );
 		if ( cachedData ) {
 			debug( `found theme data in cache key=${ cacheKey }` );
-			context.store.dispatch( cachedData.action );
+			context.store.dispatch( receiveThemes( cachedData.themes ), siteId );
 			context.renderCacheKey = context.path + cachedData.timestamp;
 			return next();
 		}
 	}
 
-	context.store.dispatch( requestThemes( 'wpcom', query ) )
-		.then( action => {
+	context.store.dispatch( requestThemes( siteId, query ) )
+		.then( () => {
 			if ( shouldUseCache ) {
+				const themes = getThemesForQuery( context.store.getState(), siteId, query );
 				const timestamp = Date.now();
-				themesQueryCache.set( cacheKey, { action, timestamp } );
+				themesQueryCache.set( cacheKey, { themes, timestamp } );
 				context.renderCacheKey = context.path + timestamp;
 				debug( `caching theme data key=${ cacheKey }` );
 			}
