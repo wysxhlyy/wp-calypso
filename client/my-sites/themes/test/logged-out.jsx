@@ -17,10 +17,9 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { createReduxStore } from 'state';
 import EmptyComponent from 'test/helpers/react/empty-component';
 import useMockery from 'test/helpers/use-mockery';
-import {
-	receiveThemes,
-	receiveServerError
-} from 'state/themes/actions';
+import { THEMES_REQUEST_SUCCESS } from 'state/action-types';
+import { receiveThemes, receiveServerError } from 'state/themes/actions';
+import { DEFAULT_THEME_QUERY } from 'state/themes/constants';
 
 describe( 'logged-out', () => {
 	context( 'when calling renderToString()', function() {
@@ -106,6 +105,13 @@ describe( 'logged-out', () => {
 
 		it( 'renders without error when themes are present', () => {
 			this.store.dispatch( receiveThemes( this.themes, 'wpcom' ) );
+			this.store.dispatch( {
+				type: THEMES_REQUEST_SUCCESS,
+				siteId: 'wpcom',
+				query: DEFAULT_THEME_QUERY,
+				found: this.themes.length,
+				themes: this.themes
+			} );
 
 			let markup;
 			assert.doesNotThrow( () => {
