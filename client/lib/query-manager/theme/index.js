@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { every, some, includes } from 'lodash';
+import moment from 'moment';
+import { every, some, includes, isEmpty } from 'lodash';
 
 /**
  * Internal dependencies
@@ -68,6 +69,22 @@ export default class ThemeQueryManager extends PaginatedQueryManager {
 
 			return true;
 		} );
+	}
+
+	/**
+	 * A sort comparison function that defines the sort order of themes under
+	 * consideration of the specified query.
+	 *
+	 * @param  {Object} query  Query object
+	 * @param  {Object} themeA First theme
+	 * @param  {Object} themeB Second theme
+	 * @return {Number}        0 if equal, less than 0 if themeA is first,
+	 *                         greater than 0 if themeB is first.
+	 */
+	sort( query, themeA, themeB ) {
+		if ( isEmpty( query ) ) {
+			return moment( themeB.date_gmt ).diff( themeA.date_gmt ); // Inverse chronological order
+		}
 	}
 }
 
