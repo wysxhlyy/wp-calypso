@@ -14,7 +14,7 @@ import mapValues from 'lodash/mapValues';
  */
 import config from 'config';
 import { sectionify } from 'lib/route/path';
-import { oldShowcaseUrl, isPremiumTheme as isPremium } from 'state/themes/utils';
+import { oldShowcaseUrl } from 'state/themes/utils';
 
 export function getPreviewUrl( theme, site ) {
 	if ( site && site.jetpack ) {
@@ -66,10 +66,6 @@ export function getSupportUrl( theme, site ) {
 
 	const sitePart = site ? `${ site.slug }/` : '';
 	return `${ oldShowcaseUrl }${ sitePart }${ theme.id }/support`;
-}
-
-export function getForumUrl( theme ) {
-	return isPremium( theme ) ? '//premium-themes.forums.wordpress.com/forum/' + theme.id : '//en.forums.wordpress.com/forum/themes';
 }
 
 export function getHelpUrl( theme, site ) {
