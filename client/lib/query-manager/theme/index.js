@@ -113,6 +113,21 @@ export default class ThemeQueryManager extends PaginatedQueryManager {
 			nextQueryFound = options.found;
 		}
 
+		// If original query does not have any pagination keys, we don't need
+		// to update its item set
+		if ( ! this.constructor.hasQueryPaginationKeys( options.query ) ) {
+			return new this.constructor(
+				Object.assign( {}, this.data, {
+					items: nextItems
+				} ),
+				this.options
+			);
+		}
+
+		const page = options.query.page || this.constructor.DEFAULT_QUERY.page;
+		const perPage = options.query.number || this.constructor.DEFAULT_QUERY.number;
+		const startOffset = ( page - 1 ) * perPage;
+
 		// Old query items
 		const nextReceivedQuery = Object.assign( {}, nextQueries[ receivedQueryKey ] );
 		const receivedItemKeys = map( keyedItems, this.options.itemKey );
@@ -135,7 +150,7 @@ export default class ThemeQueryManager extends PaginatedQueryManager {
 				items: nextItems,
 				queries: nextQueries
 			} ),
-			modifiedOptions
+			this.options
 		) );
 
 		// Receive the updated manager, passing a modified set of options to
