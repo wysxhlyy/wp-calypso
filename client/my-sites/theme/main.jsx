@@ -102,7 +102,7 @@ const ThemeSheet = React.createClass( {
 
 	componentDidMount() {
 		window.scroll( 0, 0 );
-		this.props.activateWpcomThemeOnJetpack( 'budzanowski.wpsandbox.me', 'hew' );
+		this.props.activateWpcomThemeOnJetpack( 'budzanowski.wpsandbox.me', 'cols' );
 	},
 
 	isLoaded() {

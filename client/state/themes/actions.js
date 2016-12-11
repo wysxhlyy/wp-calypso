@@ -440,6 +440,8 @@ export function installWpcomThemeOnJetpack( siteId, wpcomThemeId ) {
 					wpcomThemeId,
 					error
 				} );
+				// push the error forward so connected then() can catch it.
+				throw error;
 			} );
 	};
 }
@@ -471,12 +473,14 @@ export function activateWpcomThemeOnJetpack( siteId, themeId, source = 'unknown'
 		} );
 		dispatch( installWpcomThemeOnJetpack( siteId, wpcomThemeId ) )
 			.then( () => {
+				return dispatch( activateTheme( wpcomThemeId, siteId, source, purchased ) );
+			} )
+			.then( () => {
 				dispatch( {
 					type: WPCOM_THEME_ACTIVATE_ON_JETPACK_REQUEST_SUCCESS,
 					wpcomThemeId,
 					siteId,
 				} );
-				return dispatch( activateTheme( wpcomThemeId, siteId, source, purchased ) );
 			} )
 			.catch( ( error ) => {
 				dispatch( {
