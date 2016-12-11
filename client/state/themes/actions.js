@@ -417,17 +417,12 @@ export function themeActivated( themeStylesheet, siteId, source = 'unknown', pur
  * @param  {String}   themeId   Theme ID
  * @return {Function}           Action thunk
  */
-export function installWpcomThemeOnJetpack( siteId, themeId ) {
+export function installWpcomThemeOnJetpack( siteId, wpcomThemeId ) {
 	return ( dispatch ) => {
-		//Add -wpcom suffix. This suffix tels the endpoint that we want to
-		//install WordPress.com theme. Without the suffix endpoint would look
-		//for theme in .org
-		const wpcomThemeId = themeId + '-wpcom';
-
 		dispatch( {
 			type: THEME_INSTALL_ON_JETPACK_REQUEST,
 			siteId,
-			themeId
+			wpcomThemeId
 		} );
 
 		return wpcom.undocumented().installThemeOnJetpack( siteId, wpcomThemeId )
@@ -435,14 +430,14 @@ export function installWpcomThemeOnJetpack( siteId, themeId ) {
 				dispatch( {
 					type: THEME_INSTALL_ON_JETPACK_REQUEST_SUCCESS,
 					siteId,
-					themeId
+					wpcomThemeId
 				} );
 			} )
 			.catch( ( error ) => {
 				dispatch( {
 					type: THEME_INSTALL_ON_JETPACK_REQUEST_FAILURE,
 					siteId,
-					themeId,
+					wpcomThemeId,
 					error
 				} );
 			} );
@@ -464,26 +459,33 @@ export function clearActivated( siteId ) {
 }
 
 export function activateWpcomThemeOnJetpack( siteId, themeId, source = 'unknown', purchased = false ) {
+	//Add -wpcom suffix. This suffix tels the endpoint that we want to
+	//install WordPress.com theme. Without the suffix endpoint would look
+	//for theme in .org
+	const wpcomThemeId = themeId + '-wpcom';
 	return dispatch => {
 		dispatch( {
 			type: WPCOM_THEME_ACTIVATE_ON_JETPACK_REQUEST,
-			themeId,
+			wpcomThemeId,
 			siteId,
 		} );
-		installWpcomThemeOnJetpack( siteId, themeId )
+		dispatch( installWpcomThemeOnJetpack( siteId, wpcomThemeId ) )
 			.then( () => {
 				dispatch( {
 					type: WPCOM_THEME_ACTIVATE_ON_JETPACK_REQUEST_SUCCESS,
-					themeId,
+					wpcomThemeId,
 					siteId,
 				} );
-				activateTheme( themeId, siteId, source, purchased );
+				return dispatch( activateTheme( wpcomThemeId, siteId, source, purchased ) );
 			} )
-			.catch( dispatch( {
-				type: WPCOM_THEME_ACTIVATE_ON_JETPACK_REQUEST_FAILURE,
-				themeId,
-				siteId,
-			} ) );
+			.catch( ( error ) => {
+				dispatch( {
+					type: WPCOM_THEME_ACTIVATE_ON_JETPACK_REQUEST_FAILURE,
+					wpcomThemeId,
+					siteId,
+					error
+				} );
+			} );
 	};
 }
 

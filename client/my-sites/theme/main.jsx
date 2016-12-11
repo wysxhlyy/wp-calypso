@@ -48,6 +48,7 @@ import { getTheme } from 'state/themes/selectors';
 import { isValidTerm } from 'my-sites/themes/theme-filters';
 import { hasFeature } from 'state/sites/plans/selectors';
 import { FEATURE_UNLIMITED_PREMIUM_THEMES } from 'lib/plans/constants';
+import { activateWpcomThemeOnJetpack } from 'state/themes/actions';
 
 const ThemeSheet = React.createClass( {
 	displayName: 'ThemeSheet',
@@ -101,6 +102,7 @@ const ThemeSheet = React.createClass( {
 
 	componentDidMount() {
 		window.scroll( 0, 0 );
+		this.props.activateWpcomThemeOnJetpack( 'budzanowski.wpsandbox.me', 'hew' );
 	},
 
 	isLoaded() {
@@ -594,5 +596,6 @@ export default connect(
 				hasFeature( state, selectedSite.ID, FEATURE_UNLIMITED_PREMIUM_THEMES )
 			),
 		};
-	}
+	},
+	{ activateWpcomThemeOnJetpack }
 )( ThemeSheetWithOptions );
