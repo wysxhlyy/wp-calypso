@@ -43,7 +43,10 @@ import {
 	THEME_TRANSFER_STATUS_RECEIVE,
 	THEME_INSTALL_ON_JETPACK_REQUEST,
 	THEME_INSTALL_ON_JETPACK_REQUEST_SUCCESS,
-	THEME_INSTALL_ON_JETPACK_REQUEST_FAILURE
+	THEME_INSTALL_ON_JETPACK_REQUEST_FAILURE,
+	WPCOM_THEME_ACTIVATE_ON_JETPACK_REQUEST,
+	WPCOM_THEME_ACTIVATE_ON_JETPACK_REQUEST_SUCCESS,
+	WPCOM_THEME_ACTIVATE_ON_JETPACK_REQUEST_FAILURE,
 } from 'state/action-types';
 import {
 	recordTracksEvent,
@@ -457,6 +460,30 @@ export function clearActivated( siteId ) {
 	return {
 		type: THEME_CLEAR_ACTIVATED,
 		siteId
+	};
+}
+
+export function activateWpcomThemeOnJetpack( siteId, themeId, source = 'unknown', purchased = false ) {
+	return dispatch => {
+		dispatch( {
+			type: WPCOM_THEME_ACTIVATE_ON_JETPACK_REQUEST,
+			themeId,
+			siteId,
+		} );
+		installWpcomThemeOnJetpack( siteId, themeId )
+			.then( () => {
+				dispatch( {
+					type: WPCOM_THEME_ACTIVATE_ON_JETPACK_REQUEST_SUCCESS,
+					themeId,
+					siteId,
+				} );
+				activateTheme( themeId, siteId, source, purchased );
+			} )
+			.catch( dispatch( {
+				type: WPCOM_THEME_ACTIVATE_ON_JETPACK_REQUEST_FAILURE,
+				themeId,
+				siteId,
+			} ) );
 	};
 }
 
