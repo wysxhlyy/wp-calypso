@@ -63,7 +63,14 @@ export default React.createClass( {
 			return this.props.getSiteSelectionHeaderText();
 		}
 
-		const path = this.props.path.split( '?' )[ 0 ].replace( /\//g, ' ' );
+		let path = this.props.path.split( '?' )[ 0 ].replace( /\//g, ' ' );
+
+		switch ( path.toLowerCase().trim() ) {
+			case 'insights':
+			case 'stats insights':
+				path = this.translate( 'Insights' );
+				break;
+		}
 
 		return this.translate( 'Please select a site to open {{strong}}%(path)s{{/strong}}', {
 			args: {
