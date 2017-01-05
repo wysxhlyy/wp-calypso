@@ -22,10 +22,16 @@ import Card from 'components/card';
 import Button from 'components/button';
 import QueryTaxonomies from 'components/data/query-taxonomies';
 import TaxonomyCard from './taxonomies/taxonomy-card';
-import { isJetpackModuleActive, isJetpackMinimumVersion } from 'state/sites/selectors';
+import {
+	isJetpackModuleActive,
+	isJetpackMinimumVersion
+} from 'state/sites/selectors';
 import { getSelectedSiteId } from 'state/ui/selectors';
 import { requestPostTypes } from 'state/post-types/actions';
 import CustomPostTypeFieldset from './custom-post-types-fieldset';
+import MediaSettings from './media-settings';
+import QueryJetpackModules from 'components/data/query-jetpack-modules';
+import QueryJetpackSettings from 'components/data/query-jetpack-settings';
 
 const SiteSettingsFormWriting = React.createClass( {
 	mixins: [ dirtyLinkedState, formBase ],
@@ -133,88 +139,106 @@ const SiteSettingsFormWriting = React.createClass( {
 	render: function() {
 		const markdownSupported = this.state.markdown_supported;
 		return (
-			<form id="site-settings" onSubmit={ this.submitFormAndActivateCustomContentModule } onChange={ this.props.markChanged }>
-				{ config.isEnabled( 'manage/site-settings/categories' ) &&
-					<div className="site-settings__taxonomies">
-						<QueryTaxonomies siteId={ this.props.siteId } postType="post" />
-						<TaxonomyCard taxonomy="category" postType="post" />
-						<TaxonomyCard taxonomy="post_tag" postType="post" />
-					</div>
-				}
-
-				{ this.renderSectionHeader( this.translate( 'Composing' ) ) }
-				<Card className="site-settings">
-					<FormFieldset>
-						<FormLabel htmlFor="default_post_format">
-							{ this.translate( 'Default Post Format' ) }
-						</FormLabel>
-						<FormSelect
-							name="default_post_format"
-							id="default_post_format"
-							valueLink={ this.linkState( 'default_post_format' ) }
-							disabled={ this.state.fetchingSettings }
-							onClick={ this.recordEvent.bind( this, 'Selected Default Post Format' ) }>
-							<option value="0">{ this.translate( 'Standard', { context: 'Post format' } ) }</option>
-							<option value="aside">{ this.translate( 'Aside', { context: 'Post format' } ) }</option>
-							<option value="chat">{ this.translate( 'Chat', { context: 'Post format' } ) }</option>
-							<option value="gallery">{ this.translate( 'Gallery', { context: 'Post format' } ) }</option>
-							<option value="link">{ this.translate( 'Link', { context: 'Post format' } ) }</option>
-							<option value="image">{ this.translate( 'Image', { context: 'Post format' } ) }</option>
-							<option value="quote">{ this.translate( 'Quote', { context: 'Post format' } ) }</option>
-							<option value="status">{ this.translate( 'Status', { context: 'Post format' } ) }</option>
-							<option value="video">{ this.translate( 'Video', { context: 'Post format' } ) }</option>
-							<option value="audio">{ this.translate( 'Audio', { context: 'Post format' } ) }</option>
-						</FormSelect>
-					</FormFieldset>
-
-					{ markdownSupported &&
-						<FormFieldset className="has-divider is-top-only">
-							<FormLabel>
-								{ this.translate( 'Markdown' ) }
-							</FormLabel>
-							<FormLabel>
-								<FormCheckbox
-									name="wpcom_publish_posts_with_markdown"
-									checkedLink={ this.linkState( 'wpcom_publish_posts_with_markdown' ) }
-									disabled={ this.state.fetchingSettings }
-									onClick={ this.recordEvent.bind( this, 'Clicked Markdown for Posts Checkbox' ) } />
-								<span>{
-									this.translate( 'Use markdown for posts and pages. {{a}}Learn more about markdown{{/a}}.', {
-										components: {
-											a: <a href="http://en.support.wordpress.com/markdown-quick-reference/" target="_blank" rel="noopener noreferrer" />
-										}
-									} )
-								}</span>
-							</FormLabel>
-						</FormFieldset>
+			<div>
+				<form id="site-settings" onSubmit={ this.submitFormAndActivateCustomContentModule } onChange={ this.props.markChanged }>
+					{ this.props.jetpackVersionSupportsCalypsoSettingsUI && (
+							<QueryJetpackSettings siteId={ this.props.siteId } />
+						)
 					}
-				</Card>
+					{ this.props.jetpackVersionSupportsCalypsoSettingsUI && (
+							<QueryJetpackModules siteId={ this.props.siteId } />
+						)
+					}
+					{ config.isEnabled( 'manage/site-settings/categories' ) &&
+						<div className="site-settings__taxonomies">
+							<QueryTaxonomies siteId={ this.props.siteId } postType="post" />
+							<TaxonomyCard taxonomy="category" postType="post" />
+							<TaxonomyCard taxonomy="post_tag" postType="post" />
+						</div>
+					}
 
-				{ config.isEnabled( 'manage/custom-post-types' ) && this.props.jetpackVersionSupportsCustomTypes && (
-					<div>
-						{ this.renderSectionHeader( this.translate( 'Custom Content Types' ) ) }
-						<Card className="site-settings">
-							<CustomPostTypeFieldset
-								requestingSettings={ this.state.fetchingSettings }
-								value={ pick( this.state, 'jetpack_testimonial', 'jetpack_portfolio' ) }
-								onChange={ this.setCustomPostTypeSetting }
-								recordEvent={ this.recordEvent }
-								className="site-settings__custom-post-type-fieldset" />
-						</Card>
-					</div>
-				) }
+					{ this.renderSectionHeader( this.translate( 'Composing' ) ) }
+					<Card className="site-settings">
+						<FormFieldset>
+							<FormLabel htmlFor="default_post_format">
+								{ this.translate( 'Default Post Format' ) }
+							</FormLabel>
+							<FormSelect
+								name="default_post_format"
+								id="default_post_format"
+								valueLink={ this.linkState( 'default_post_format' ) }
+								disabled={ this.state.fetchingSettings }
+								onClick={ this.recordEvent.bind( this, 'Selected Default Post Format' ) }>
+								<option value="0">{ this.translate( 'Standard', { context: 'Post format' } ) }</option>
+								<option value="aside">{ this.translate( 'Aside', { context: 'Post format' } ) }</option>
+								<option value="chat">{ this.translate( 'Chat', { context: 'Post format' } ) }</option>
+								<option value="gallery">{ this.translate( 'Gallery', { context: 'Post format' } ) }</option>
+								<option value="link">{ this.translate( 'Link', { context: 'Post format' } ) }</option>
+								<option value="image">{ this.translate( 'Image', { context: 'Post format' } ) }</option>
+								<option value="quote">{ this.translate( 'Quote', { context: 'Post format' } ) }</option>
+								<option value="status">{ this.translate( 'Status', { context: 'Post format' } ) }</option>
+								<option value="video">{ this.translate( 'Video', { context: 'Post format' } ) }</option>
+								<option value="audio">{ this.translate( 'Audio', { context: 'Post format' } ) }</option>
+							</FormSelect>
+						</FormFieldset>
 
-				{ config.isEnabled( 'press-this' ) && (
-					<div>
-						{
-							this.renderSectionHeader( this.translate( 'Press This', {
-								context: 'name of browser bookmarklet tool'
-							} ), false )
+						{ markdownSupported &&
+							<FormFieldset className="has-divider is-top-only">
+								<FormLabel>
+									{ this.translate( 'Markdown' ) }
+								</FormLabel>
+								<FormLabel>
+									<FormCheckbox
+										name="wpcom_publish_posts_with_markdown"
+										checkedLink={ this.linkState( 'wpcom_publish_posts_with_markdown' ) }
+										disabled={ this.state.fetchingSettings }
+										onClick={ this.recordEvent.bind( this, 'Clicked Markdown for Posts Checkbox' ) } />
+									<span>{
+										this.translate( 'Use markdown for posts and pages. {{a}}Learn more about markdown{{/a}}.', {
+											components: {
+												a: <a href="http://en.support.wordpress.com/markdown-quick-reference/" target="_blank" rel="noopener noreferrer" />
+											}
+										} )
+									}</span>
+								</FormLabel>
+							</FormFieldset>
 						}
-						<PressThis />
-					</div>
-				) }
-			</form>
+					</Card>
+
+					{ config.isEnabled( 'manage/custom-post-types' ) && this.props.jetpackVersionSupportsCustomTypes && (
+						<div>
+							{ this.renderSectionHeader( this.translate( 'Custom Content Types' ) ) }
+							<Card className="site-settings">
+								<CustomPostTypeFieldset
+									requestingSettings={ this.state.fetchingSettings }
+									value={ pick( this.state, 'jetpack_testimonial', 'jetpack_portfolio' ) }
+									onChange={ this.setCustomPostTypeSetting }
+									recordEvent={ this.recordEvent }
+									className="site-settings__custom-post-type-fieldset" />
+							</Card>
+						</div>
+					) }
+
+					{ config.isEnabled( 'press-this' ) && (
+						<div>
+							{
+								this.renderSectionHeader( this.translate( 'Press This', {
+									context: 'name of browser bookmarklet tool'
+								} ), false )
+							}
+							<PressThis />
+						</div>
+					) }
+
+				</form>
+				{
+					this.props.jetpackVersionSupportsCalypsoSettingsUI && (
+						<MediaSettings
+							site={ this.props.site }
+							/>
+					)
+				}
+			</div>
 		);
 	}
 } );
@@ -222,10 +246,10 @@ const SiteSettingsFormWriting = React.createClass( {
 export default connect(
 	( state ) => {
 		const siteId = getSelectedSiteId( state );
-
 		return {
 			jetpackCustomTypesModuleActive: false !== isJetpackModuleActive( state, siteId, 'custom-content-types' ),
 			jetpackVersionSupportsCustomTypes: false !== isJetpackMinimumVersion( state, siteId, '4.2.0' ),
+			jetpackVersionSupportsCalypsoSettingsUI: false !== isJetpackMinimumVersion( state, siteId, '4.5-beta1' ),
 			siteId
 		};
 	},
