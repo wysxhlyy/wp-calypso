@@ -53,6 +53,7 @@ import { getTheme } from 'state/themes/selectors';
 import { isValidTerm } from 'my-sites/themes/theme-filters';
 import { hasFeature } from 'state/sites/plans/selectors';
 import { FEATURE_UNLIMITED_PREMIUM_THEMES } from 'lib/plans/constants';
+import { recordTracksEvent } from 'state/analytics/actions';
 
 const ThemeSheet = React.createClass( {
 	displayName: 'ThemeSheet',
@@ -142,6 +143,14 @@ const ThemeSheet = React.createClass( {
 			return this.getValidSections()[ 0 ];
 		}
 		return section;
+	},
+
+	trackContactUsClick() {
+		this.props.recordThemeSheetButtonClick( 'help' );
+	},
+
+	trackCssClick() {
+		this.props.recordThemeSheetButtonClick( 'css' );
 	},
 
 	togglePreview() {
@@ -273,7 +282,12 @@ const ThemeSheet = React.createClass( {
 					{ i18n.translate( 'Need extra help?' ) }
 					<small>{ i18n.translate( 'Get in touch with our support team' ) }</small>
 				</div>
-				<Button primary={ isPrimary } href={ '/help/contact/' }>Contact us</Button>
+				<Button
+					primary={ isPrimary }
+					href={ '/help/contact/' }
+					onClick={ this.trackContactUsClick }>
+					Contact us
+				</Button>
 			</Card>
 		);
 	},
@@ -307,7 +321,11 @@ const ThemeSheet = React.createClass( {
 					{ i18n.translate( 'Need CSS help? ' ) }
 					<small>{ i18n.translate( 'Get help from the experts in our CSS forum' ) }</small>
 				</div>
-				<Button href="//en.forums.wordpress.com/forum/css-customization">Visit forum</Button>
+				<Button
+					href="//en.forums.wordpress.com/forum/css-customization"
+					onClick={ this.trackCssClick }>
+					Visit forum
+				</Button>
 			</Card>
 		);
 	},
@@ -577,6 +595,13 @@ const ThemeSheetWithOptions = ( props ) => {
 	);
 };
 
+const mapDispatchToProps = ( dispatch, ownProps ) => ( {
+	recordThemeSheetButtonClick: ( context ) => dispatch( recordTracksEvent( 'calypso_theme_sheet_button_click', {
+		theme_name: ownProps.id,
+		button_context: context
+	} ) )
+} );
+
 export default connect(
 	/*
 	 * A number of the props that this mapStateToProps function computes are used
@@ -632,5 +657,6 @@ export default connect(
 			),
 			forumUrl: selectedSite && getThemeForumUrl( state, id, selectedSite.ID )
 		};
-	}
+	},
+	mapDispatchToProps
 )( ThemeSheetWithOptions );
