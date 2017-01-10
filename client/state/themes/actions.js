@@ -50,6 +50,7 @@ import {
 	withAnalytics
 } from 'state/analytics/actions';
 import { getTheme, getActiveTheme, getLastThemeQuery, getThemeCustomizeUrl } from './selectors';
+import { hasJetpackSiteJetpackThemesExtendedFeatures } from 'state/sites/selectors';
 import {
 	getThemeIdFromStylesheet,
 	filterThemesForJetpack,
@@ -104,7 +105,7 @@ export function receiveThemes( themes, siteId ) {
  * @return {Function}             Action thunk
  */
 export function requestThemes( siteId, query = {} ) {
-	return ( dispatch ) => {
+	return ( dispatch, getState ) => {
 		const startTime = new Date().getTime();
 		let siteIdToQuery, queryWithApiVersion;
 
@@ -127,9 +128,14 @@ export function requestThemes( siteId, query = {} ) {
 			let filteredThemes;
 			if ( siteId !== 'wpcom' ) {
 				themes = map( rawThemes, normalizeJetpackTheme );
-				// A Jetpack site's themes endpoint ignores the query, returning an unfiltered list of all installed themes instead,
-				// So we have to filter on the client side instead.
-				filteredThemes = filterThemesForJetpack( themes, query );
+				// A Jetpack site's themes endpoint ignores the query,
+				// returning an unfiltered list of all installed themes instead.
+				// So we have to filter on the client side.
+				// Also if Jetpack plugin has Themes Extended Features,
+				// we filter out -wpcom suffixed themes because we will show them in
+				// second list that is specific to WorpPress.com themes.
+				const filterWpcom = hasJetpackSiteJetpackThemesExtendedFeatures( getState(), siteId );
+				filteredThemes = filterThemesForJetpack( themes, query, filterWpcom );
 			} else {
 				themes = map( rawThemes, normalizeWpcomTheme );
 				filteredThemes = themes;
