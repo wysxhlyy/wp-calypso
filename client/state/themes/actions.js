@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { map, property, delay } from 'lodash';
+import { filter, map, property, delay } from 'lodash';
 import debugFactory from 'debug';
 import page from 'page';
 
@@ -53,11 +53,13 @@ import { getTheme, getActiveTheme, getLastThemeQuery, getThemeCustomizeUrl } fro
 import { hasJetpackSiteJetpackThemesExtendedFeatures } from 'state/sites/selectors';
 import {
 	getThemeIdFromStylesheet,
-	filterThemesForJetpack,
+	isThemeMatchingQuery,
+	isWpcomTheme,
 	normalizeJetpackTheme,
 	normalizeWpcomTheme,
 	normalizeWporgTheme
 } from './utils';
+import config from 'config';
 
 const debug = debugFactory( 'calypso:themes:actions' ); //eslint-disable-line no-unused-vars
 
@@ -134,8 +136,13 @@ export function requestThemes( siteId, query = {} ) {
 				// Also if Jetpack plugin has Themes Extended Features,
 				// we filter out -wpcom suffixed themes because we will show them in
 				// second list that is specific to WorpPress.com themes.
-				const filterWpcom = hasJetpackSiteJetpackThemesExtendedFeatures( getState(), siteId );
-				filteredThemes = filterThemesForJetpack( themes, query, filterWpcom );
+				const keepWpcom = ! config.isEnabled( 'manage/themes/upload' ) ||
+					! hasJetpackSiteJetpackThemesExtendedFeatures( getState(), siteId );
+
+				filteredThemes = filter(
+					themes,
+					theme => isThemeMatchingQuery( query, theme ) && ( keepWpcom || ! isWpcomTheme( theme.id ) )
+				);
 			} else {
 				themes = map( rawThemes, normalizeWpcomTheme );
 				filteredThemes = themes;
