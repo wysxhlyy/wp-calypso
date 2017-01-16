@@ -20,10 +20,16 @@ import Card from 'components/card';
 import Button from 'components/button';
 import QueryTaxonomies from 'components/data/query-taxonomies';
 import TaxonomyCard from './taxonomies/taxonomy-card';
-import { isJetpackModuleActive, isJetpackMinimumVersion } from 'state/sites/selectors';
+import {
+	isJetpackModuleActive,
+	isJetpackMinimumVersion,
+	isJetpackSite,
+	siteSupportsJetpackSettingsUI
+} from 'state/sites/selectors';
 import { getSelectedSiteId } from 'state/ui/selectors';
 import { requestPostTypes } from 'state/post-types/actions';
 import CustomPostTypeFieldset from './custom-post-types-fieldset';
+import PublishingTools from './publishing-tools';
 
 class SiteSettingsFormWriting extends Component {
 
@@ -190,6 +196,16 @@ class SiteSettingsFormWriting extends Component {
 					</div>
 				) }
 
+				{
+					this.props.isJetpackSite && this.props.jetpackSettingsUISupported && (
+						<PublishingTools
+							submittingForm={ this.state.submittingForm }
+							onSubmitForm={ this.handleSubmitForm }
+							fetchingSettings={ this.state.fetchingSettings }
+							/>
+					)
+				}
+
 				{ config.isEnabled( 'press-this' ) && (
 					<div>
 						{
@@ -212,6 +228,8 @@ const connectComponent = connect(
 		return {
 			jetpackCustomTypesModuleActive: false !== isJetpackModuleActive( state, siteId, 'custom-content-types' ),
 			jetpackVersionSupportsCustomTypes: false !== isJetpackMinimumVersion( state, siteId, '4.2.0' ),
+			jetpackSettingsUISupported: siteSupportsJetpackSettingsUI( state, siteId ),
+			isJetpackSite: isJetpackSite( state, siteId ),
 			siteId
 		};
 	},
