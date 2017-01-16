@@ -42,11 +42,6 @@ class SiteSettingsFormGeneral extends Component {
 		this._showWarning( this.props.site );
 	}
 
-	handleSelect = event => {
-		const { name, value } = event.currentTarget;
-		this.props.updateFields( { [ name ]: value } );
-	};
-
 	onTimezoneSelect = timezone => {
 		this.props.updateFields( {
 			timezone_string: timezone
@@ -617,6 +612,7 @@ class SiteSettingsFormGeneral extends Component {
 	startOfWeekOption() {
 		const {
 			fields: { start_of_week },
+			handleSelect,
 			isRequestingSettings,
 			translate,
 		} = this.props;
@@ -639,7 +635,7 @@ class SiteSettingsFormGeneral extends Component {
 				<FormSelect
 					disabled={ isRequestingSettings }
 					name="start_of_week"
-					onChange={ this.handleSelect }
+					onChange={ handleSelect }
 					value={ start_of_week || 0 }
 				>
 					{ daysOfWeek.map( ( day, index ) =>

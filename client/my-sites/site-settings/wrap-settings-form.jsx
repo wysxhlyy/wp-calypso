@@ -92,6 +92,11 @@ const wrapSettingsForm = getFormSettings => SettingsForm => {
 			this.props.updateFields( { [ currentTargetName ]: currentTargetValue } );
 		};
 
+		handleSelect = event => {
+			const { name, value } = event.currentTarget;
+			this.props.updateFields( { [ name ]: value } );
+		};
+
 		handleToggle = name => () => {
 			this.props.trackEvent( `Toggled ${ name }` );
 			this.props.updateFields( { [ name ]: ! this.props.fields[ name ] } );
@@ -119,6 +124,7 @@ const wrapSettingsForm = getFormSettings => SettingsForm => {
 		render() {
 			const utils = {
 				handleRadio: this.handleRadio,
+				handleSelect: this.handleSelect,
 				handleSubmitForm: this.handleSubmitForm,
 				handleToggle: this.handleToggle,
 				onChangeField: this.onChangeField,
