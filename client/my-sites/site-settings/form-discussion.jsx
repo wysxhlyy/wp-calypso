@@ -25,27 +25,10 @@ import QueryJetpackSettings from 'components/data/query-jetpack-settings';
 import SectionHeader from 'components/section-header';
 import wrapSettingsForm from './wrap-settings-form';
 import { getSelectedSiteId } from 'state/ui/selectors';
-import { getJetpackSettings, isRequestingJetpackSettings } from 'state/jetpack/settings/selectors';
 import { isJetpackSite, isJetpackModuleActive, isJetpackMinimumVersion } from 'state/sites/selectors';
 import { updateSettings } from 'state/jetpack/settings/actions';
 
 class SiteSettingsFormDiscussion extends Component {
-	submitFormAndSaveJetpackSettings = ( event ) => {
-		this.props.handleSubmitForm( event );
-
-		// Only Jetpack sites need extra handling on save
-		if ( ! this.props.site || ! this.props.site.jetpack || ! this.props.jetpackVersionSupportsCalypsoSettingsUI ) {
-			return;
-		}
-
-		const updatedJetpackSettings = pick( this.props.fields, [
-			'highlander_comment_form_prompt',
-			'jetpack_comment_form_color_scheme',
-		] );
-
-		this.props.updateSettings( this.props.siteId, updatedJetpackSettings );
-	}
-
 	handleCommentOrder = () => {
 		this.props.trackEvent( 'Toggled Comment Order on Page' );
 		this.props.updateFields( {
@@ -86,7 +69,7 @@ class SiteSettingsFormDiscussion extends Component {
 	}
 
 	commentDisplaySettings() {
-		if ( ! this.props.jetpackVersionSupportsCalypsoSettingsUI ) {
+		if ( ! this.props.isJetpack || ! this.props.jetpackVersionSupportsCalypsoSettingsUI ) {
 			return null;
 		}
 
@@ -474,14 +457,14 @@ class SiteSettingsFormDiscussion extends Component {
 	}
 
 	renderSectionHeader( title, showButton = true ) {
-		const { isRequestingSettings, isSavingSettings, translate } = this.props;
+		const { handleSubmitForm, isRequestingSettings, isSavingSettings, translate } = this.props;
 		return (
 			<SectionHeader label={ title }>
 				{ showButton &&
 					<Button
 						compact
 						primary
-						onClick={ this.submitFormAndSaveJetpackSettings }
+						onClick={ handleSubmitForm }
 						disabled={ isRequestingSettings || isSavingSettings }>
 						{ isSavingSettings ? translate( 'Saving…' ) : translate( 'Save Settings' ) }
 					</Button>
@@ -491,10 +474,10 @@ class SiteSettingsFormDiscussion extends Component {
 	}
 
 	render() {
-		const { translate, markChanged } = this.props;
+		const { handleSubmitForm, markChanged, translate } = this.props;
 
 		return (
-			<form id="site-settings" onSubmit={ this.submitFormAndSaveJetpackSettings } onChange={ markChanged }>
+			<form id="site-settings" onSubmit={ handleSubmitForm } onChange={ markChanged }>
 				{ this.renderSectionHeader( translate( 'Default Article Settings' ) ) }
 				<Card className="site-settings__discussion-settings">
 					{ this.defaultArticleSettings() }
@@ -526,16 +509,14 @@ const connectComponent = connect(
 			siteId,
 			isJetpack: isJetpackSite( state, siteId ),
 			isLikesModuleActive: isJetpackModuleActive( state, siteId, 'likes' ),
-			jetpackSettings: getJetpackSettings( state, siteId ),
-			isRequestingJetpackSettings: isRequestingJetpackSettings( state, siteId ),
 			jetpackVersionSupportsCalypsoSettingsUI: false !== isJetpackMinimumVersion( state, siteId, '4.5-beta1' ),
 		};
 	},
 	dispatch => bindActionCreators( { updateSettings }, dispatch )
 );
 
-const getFormSettings = ( settings, jetpackSettings ) => {
-	const siteSettings = pick( settings, [
+const getFormSettings = settings => {
+	return pick( settings, [
 		'default_pingback_flag',
 		'default_ping_status',
 		'default_comment_status',
@@ -562,14 +543,9 @@ const getFormSettings = ( settings, jetpackSettings ) => {
 		'admin_url',
 		'wpcom_publish_comments_with_markdown',
 		'markdown_supported',
-	] );
-
-	const siteJetpackSettings = pick( jetpackSettings, [
 		'highlander_comment_form_prompt',
 		'jetpack_comment_form_color_scheme',
 	] );
-
-	return { ...siteSettings, ...siteJetpackSettings };
 };
 
 export default flowRight(
