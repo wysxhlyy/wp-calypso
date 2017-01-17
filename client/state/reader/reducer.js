@@ -15,6 +15,7 @@ import posts from './posts/reducer';
 import relatedPosts from './related-posts/reducer';
 import tags from './tags/reducer';
 import thumbnails from './thumbnails/reducer';
+import streams from './streams/reducer';
 
 export default combineReducers( {
 	feeds,
@@ -24,6 +25,7 @@ export default combineReducers( {
 	start,
 	posts,
 	relatedPosts,
+	streams,
 	tags,
 	thumbnails,
 } );
