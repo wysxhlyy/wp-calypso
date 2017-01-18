@@ -73,7 +73,7 @@ class SiteSettingsFormDiscussion extends Component {
 			return null;
 		}
 
-		const { fields, isSavingSettings, onChangeField } = this.props;
+		const { fields, isRequestingSettings, isSavingSettings, onChangeField } = this.props;
 
 		const commentDisplaySettingsFields = {
 			highlander_comment_form_prompt: fields.highlander_comment_form_prompt,
@@ -86,7 +86,7 @@ class SiteSettingsFormDiscussion extends Component {
 				<QueryJetpackModules siteId={ this.props.siteId } />
 				<CommentDisplaySettings
 					onChangeField={ onChangeField }
-					submittingForm={ this.props.isRequestingJetpackSettings || isSavingSettings }
+					submittingForm={ isRequestingSettings || isSavingSettings }
 					fields={ commentDisplaySettingsFields } />
 				<hr />
 			</div>
