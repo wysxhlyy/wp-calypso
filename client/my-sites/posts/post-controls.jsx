@@ -12,7 +12,7 @@ import { noop } from 'lodash';
  */
 var config = require( 'config' ),
 	utils = require( 'lib/posts/utils' ),
-	Gridicon = require( 'components/gridicon'),
+	Gridicon = require( 'gridicons'),
 	recordEvent = require( 'lib/analytics' ).ga.recordEvent;
 
 module.exports = React.createClass( {
