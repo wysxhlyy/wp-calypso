@@ -69,7 +69,8 @@ class SiteSettingsFormDiscussion extends Component {
 	}
 
 	commentDisplaySettings() {
-		if ( ! this.props.isJetpack || ! this.props.jetpackVersionSupportsCalypsoSettingsUI ) {
+		const { isJetpack, isCommentsModuleActive, jetpackVersionSupportsCalypsoSettingsUI } = this.props;
+		if ( ! isJetpack || ! isCommentsModuleActive || ! jetpackVersionSupportsCalypsoSettingsUI ) {
 			return null;
 		}
 
@@ -509,6 +510,7 @@ const connectComponent = connect(
 			siteId,
 			isJetpack: isJetpackSite( state, siteId ),
 			isLikesModuleActive: isJetpackModuleActive( state, siteId, 'likes' ),
+			isCommentsModuleActive: isJetpackModuleActive( state, siteId, 'comments' ),
 			jetpackVersionSupportsCalypsoSettingsUI: false !== isJetpackMinimumVersion( state, siteId, '4.5-beta1' ),
 		};
 	},
