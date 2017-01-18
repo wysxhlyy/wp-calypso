@@ -485,6 +485,10 @@ class SiteSettingsFormGeneral extends Component {
 	}
 
 	dateFormatOption() {
+		if ( ! config.isEnabled( 'manage/site-settings/date-time-format' ) ) {
+			return null;
+		}
+
 		const {
 			fields: { date_format, timezone_string },
 			handleRadio,
@@ -545,6 +549,10 @@ class SiteSettingsFormGeneral extends Component {
 	}
 
 	timeFormatOption() {
+		if ( ! config.isEnabled( 'manage/site-settings/date-time-format' ) ) {
+			return null;
+		}
+
 		const {
 			fields: { time_format, timezone_string },
 			handleRadio,
@@ -610,6 +618,10 @@ class SiteSettingsFormGeneral extends Component {
 	}
 
 	startOfWeekOption() {
+		if ( ! config.isEnabled( 'manage/site-settings/date-time-format' ) ) {
+			return null;
+		}
+
 		const {
 			fields: { start_of_week },
 			handleSelect,
