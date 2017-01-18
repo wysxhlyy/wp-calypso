@@ -20,6 +20,9 @@ import { decodeEntities } from 'lib/formatting';
 import Main from 'components/main';
 import StatsFirstView from '../stats-first-view';
 import PostLikes from '../stats-post-likes';
+import QueryPostStats from 'components/data/query-post-stats';
+import NoViewsPlaceholder from './no-views-placeholder';
+import { getPostStat, isRequestingPostStats } from 'state/stats/posts/selectors';
 import { getSelectedSiteId } from 'state/ui/selectors';
 
 const StatsPostDetail = React.createClass( {
@@ -42,10 +45,10 @@ const StatsPostDetail = React.createClass( {
 	},
 
 	render() {
+		const { isRequesting, countViews, postId, postViewsList, siteId, translate } = this.props;
 		let title;
-
-		const post = this.props.postViewsList.response.post;
-		const isLoading = this.props.postViewsList.isLoading();
+		const post = postViewsList.response.post;
+		const isLoading = postViewsList.isLoading();
 		const postOnRecord = post && post.post_title !== null;
 
 		if ( postOnRecord ) {
@@ -55,43 +58,50 @@ const StatsPostDetail = React.createClass( {
 		}
 
 		if ( ! postOnRecord && ! isLoading ) {
-			title = this.props.translate( 'We don\'t have that post on record yet.' );
+			title = translate( 'We don\'t have that post on record yet.' );
 		}
 
 		return (
 			<Main wideLayout={ true }>
+				<QueryPostStats siteId={ siteId } postId={ postId } />
+
+				{ ! isRequesting && countViews === 0 && <NoViewsPlaceholder /> }
+
 				<StatsFirstView />
 
 				<HeaderCake onClick={ this.goBack }>
 					{ title }
 				</HeaderCake>
 
-				<PostSummary siteId={ this.props.siteId } postId={ this.props.postId } />
+				<PostSummary siteId={ siteId } postId={ postId } />
 
-				{ !! this.props.postId && <PostLikes siteId={ this.props.siteId } postId={ this.props.postId } /> }
+				{ !! postId && <PostLikes siteId={ siteId } postId={ postId } /> }
 
 				<PostMonths
 					dataKey="years"
-					title={ this.props.translate( 'Months and Years' ) }
-					total={ this.props.translate( 'Total' ) }
-					postViewsList={ this.props.postViewsList } />
+					title={ translate( 'Months and Years' ) }
+					total={ translate( 'Total' ) }
+					postViewsList={ postViewsList } />
 
 				<PostMonths
 					dataKey="averages"
-					title={ this.props.translate( 'Average per Day' ) }
-					total={ this.props.translate( 'Overall' ) }
-					postViewsList={ this.props.postViewsList } />
+					title={ translate( 'Average per Day' ) }
+					total={ translate( 'Overall' ) }
+					postViewsList={ postViewsList } />
 
-				<PostWeeks postViewsList={ this.props.postViewsList } />
+				<PostWeeks postViewsList={ postViewsList } />
 			</Main>
 		);
 	}
 } );
 
 const connectComponent = connect(
-	state => {
+	( state, { postId } ) => {
+		const siteId = getSelectedSiteId( state );
 		return {
-			siteId: getSelectedSiteId( state ),
+			countViews: getPostStat( state, siteId, postId, 'views' ),
+			isRequesting: isRequestingPostStats( state, siteId, postId ),
+			siteId
 		};
 	}
 );
