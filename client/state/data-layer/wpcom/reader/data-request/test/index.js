@@ -21,63 +21,60 @@ const SAMPLE_DATA_FETCH_SUCCESS = Promise.resolve( {
 } );
 const SAMPLE_DATA_FETCH_FAILURE = Promise.reject( {} );
 
-describe( 'actions', () => {
+describe( 'readerDataFetcher', () => {
 	const dispatchSpy = sinon.spy();
 
 	beforeEach( () => {
 		dispatchSpy.reset();
 	} );
 
-	describe( 'requestTeams', () => {
+	it( 'request should dispatch success when api succeeds', () => {
+		const request = readerDataHandler( { dispatch: dispatchSpy }, {
+			type: READER_DATA_REQUEST,
+			requestAction: SAMPLE_ACTION_REQUEST,
+			dataFetch: SAMPLE_DATA_FETCH_SUCCESS,
+		} );
 
-		it( 'request should dispatch success when api succeeds', () => {
-			const request = readerDataHandler( { dispatch: dispatchSpy }, {
-				type: READER_DATA_REQUEST,
-				requestAction: SAMPLE_ACTION_REQUEST,
-				dataFetch: SAMPLE_DATA_FETCH_SUCCESS,
-			} );
+		expect( dispatchSpy ).to.have.been.calledWith( {
+			type: SAMPLE_ACTION_REQUEST,
+		} );
 
+		return request.then( () => {
 			expect( dispatchSpy ).to.have.been.calledWith( {
-				type: SAMPLE_ACTION_REQUEST,
+				type: SAMPLE_ACTION_REQUEST_SUCCESS,
+				bool: true,
+				object: { a: '1' },
 			} );
 
-			return request.then( () => {
+			expect( dispatchSpy.calledTwice );
+		} ).catch( ( err ) => {
+			assert.fail( err, undefined, 'errback should not have been called' );
+		} );
+	} );
+
+	it( 'request should dispatch failure when api fails', () => {
+		const request = readerDataHandler( { dispatch: dispatchSpy }, {
+			type: READER_DATA_REQUEST,
+			requestAction: SAMPLE_ACTION_REQUEST,
+			dataFetch: SAMPLE_DATA_FETCH_FAILURE,
+		} );
+
+		expect( dispatchSpy ).to.have.been.calledWith( {
+			type: SAMPLE_ACTION_REQUEST,
+		} );
+
+		return request.then(
+			() => {
 				expect( dispatchSpy ).to.have.been.calledWith( {
-					type: SAMPLE_ACTION_REQUEST_SUCCESS,
-					bool: true,
-					object: { a: '1' },
+					type: SAMPLE_ACTION_REQUEST_FAILURE,
+					error: sinon.match.any,
 				} );
 
 				expect( dispatchSpy.calledTwice );
-			} ).catch( ( err ) => {
+			},
+			err => {
 				assert.fail( err, undefined, 'errback should not have been called' );
-			} );
-		} );
-
-		it( 'request should dispatch failure when api fails', () => {
-			const request = readerDataHandler( { dispatch: dispatchSpy }, {
-				type: READER_DATA_REQUEST,
-				requestAction: SAMPLE_ACTION_REQUEST,
-				dataFetch: SAMPLE_DATA_FETCH_FAILURE,
-			} );
-
-			expect( dispatchSpy ).to.have.been.calledWith( {
-				type: SAMPLE_ACTION_REQUEST,
-			} );
-
-			return request.then(
-				() => {
-					expect( dispatchSpy ).to.have.been.calledWith( {
-						type: SAMPLE_ACTION_REQUEST_FAILURE,
-						error: sinon.match.any,
-					} );
-
-					expect( dispatchSpy.calledTwice );
-				},
-				err => {
-					assert.fail( err, undefined, 'errback should not have been called' );
-				}
-			);
-		} );
+			}
+		);
 	} );
 } );
