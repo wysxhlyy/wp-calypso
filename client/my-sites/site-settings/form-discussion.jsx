@@ -375,7 +375,7 @@ class SiteSettingsFormDiscussion extends Component {
 	commentModerationSettings() {
 		const { eventTracker, fields, isRequestingSettings, onChangeField, translate, uniqueEventTracker } = this.props;
 		return (
-			<FormFieldset>
+			<FormFieldset className="site-settings__moderation-settings">
 				<FormLegend>{ translate( 'Comment Moderation' ) }</FormLegend>
 				<p>{
 					translate(
