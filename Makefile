@@ -91,10 +91,10 @@ welcome:
 install: node_modules
 
 # Simply running `make run` will spawn the Node.js server instance.
-run: welcome githooks install build
+run: welcome githooks install build server/devdocs/proptypes-index.json
 	@$(NODE) build/bundle-$(CALYPSO_ENV).js
 
-dashboard: install
+dashboard: install server/devdocs/proptypes-index.json
 	@$(NODE_BIN)/webpack-dashboard -- make run
 
 # a helper rule to ensure that a specific module is installed,
@@ -172,9 +172,9 @@ build: install build-$(CALYPSO_ENV)
 
 build-css: public/style.css public/style-rtl.css public/style-debug.css public/editor.css
 
-build-development: server/devdocs/proptypes-index.json server/devdocs/components-usage-stats.json build-server build-dll $(CLIENT_CONFIG_FILE) server/devdocs/search-index.js build-css
+build-development: server/devdocs/components-usage-stats.json build-server build-dll $(CLIENT_CONFIG_FILE) server/devdocs/search-index.js build-css
 
-build-wpcalypso: server/devdocs/proptypes-index.json server/devdocs/components-usage-stats.json build-server build-dll $(CLIENT_CONFIG_FILE) server/devdocs/search-index.js build-css
+build-wpcalypso: server/devdocs/components-usage-stats.json build-server build-dll $(CLIENT_CONFIG_FILE) server/devdocs/search-index.js build-css
 	@$(BUNDLER)
 
 build-horizon build-stage build-production: build-server build-dll $(CLIENT_CONFIG_FILE) build-css
