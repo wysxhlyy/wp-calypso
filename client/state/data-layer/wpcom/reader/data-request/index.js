@@ -14,7 +14,7 @@ export const readerDataHandler = ( { dispatch }, {
 		...dispatchArgs,
 	} );
 
-	return dataFetch
+	return dataFetch()
 		.then(
 			data => {
 				dispatch( {
@@ -35,5 +35,5 @@ export const readerDataHandler = ( { dispatch }, {
 };
 
 export default {
-	[ READER_DATA_REQUEST ]: readerDataHandler
+	[ READER_DATA_REQUEST ]: [ readerDataHandler ],
 };

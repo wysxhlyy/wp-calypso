@@ -15,11 +15,11 @@ import { readerDataHandler } from '../';
 const SAMPLE_ACTION_REQUEST = 'SAMPLE_ACTION_REQUEST';
 const SAMPLE_ACTION_REQUEST_SUCCESS = 'SAMPLE_ACTION_REQUEST_SUCCESS';
 const SAMPLE_ACTION_REQUEST_FAILURE = 'SAMPLE_ACTION_REQUEST_FAILURE';
-const SAMPLE_DATA_FETCH_SUCCESS = Promise.resolve( {
+const SAMPLE_DATA_FETCH_SUCCESS = () => Promise.resolve( {
 	bool: true,
 	object: { a: '1' },
 } );
-const SAMPLE_DATA_FETCH_FAILURE = Promise.reject( {} );
+const SAMPLE_DATA_FETCH_FAILURE = () => Promise.reject( {} );
 
 describe( 'readerDataFetcher', () => {
 	const dispatchSpy = sinon.spy();

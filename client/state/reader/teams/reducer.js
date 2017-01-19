@@ -14,7 +14,7 @@ import {
 import { createReducer } from 'state/utils';
 
 export const items = createReducer( [], {
-	READER_TEAMS_REQUEST_SUCCESS: ( state, action ) => [ ...state, ...action.teams ],
+	[ READER_TEAMS_REQUEST_SUCCESS ]: ( state, action ) => [ ...state, ...action.teams ],
 } );
 
 export const isRequesting = createReducer( false, {
@@ -23,7 +23,7 @@ export const isRequesting = createReducer( false, {
 	[ READER_TEAMS_REQUEST_SUCCESS ]: () => false,
 } );
 
-export default combineReducers(
+export default combineReducers( {
 	items,
 	isRequesting,
-);
+} );

@@ -17,6 +17,7 @@ export function requestTeams() {
 	return {
 		type: READER_DATA_REQUEST,
 		requestAction: READER_TEAMS_REQUEST,
-		dataFetch: wpcomUndocumented.readTeams,
+		dataFetch: wpcomUndocumented.readTeams.bind( wpcomUndocumented ),
 	};
 }
+
