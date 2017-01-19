@@ -194,12 +194,24 @@ class ThemesSelectionWithPage extends React.Component {
 		page: 1,
 	};
 
+	componentDidMount() {
+		this._isMounted = true;
+	}
+
+	componentWillUnmount() {
+		this._isMounted = false;
+	}
+
 	incrementPage = () => {
-		this.setState( { page: this.state.page + 1 } );
+		if ( this._isMounted ) {
+			this.setState( { page: this.state.page + 1 } );
+		}
 	}
 
 	resetPage = () => {
-		this.setState( { page: 1 } );
+		if ( this._isMounted ) {
+			this.setState( { page: 1 } );
+		}
 	}
 
 	render() {

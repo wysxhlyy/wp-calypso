@@ -6,9 +6,9 @@
  */
 import React from 'react';
 import { connect } from 'react-redux';
-import i18n from 'i18n-calypso';
 import titlecase from 'to-title-case';
 import { isArray } from 'lodash';
+import { localize } from 'i18n-calypso';
 
 /**
  * Internal dependencies
@@ -71,6 +71,7 @@ const ThemeSheet = React.createClass( {
 		download: React.PropTypes.string,
 		taxonomies: React.PropTypes.object,
 		stylesheet: React.PropTypes.string,
+		translate: React.PropTypes.func,
 		// Connected props
 		isLoggedIn: React.PropTypes.bool,
 		isActive: React.PropTypes.bool,
@@ -145,12 +146,19 @@ const ThemeSheet = React.createClass( {
 		return section;
 	},
 
+	trackButtonClick( context ) {
+		this.props.recordTracksEvent( 'calypso_theme_sheet_button_click', {
+			theme_name: this.props.id,
+			button_context: context
+		} );
+	},
+
 	trackContactUsClick() {
-		this.props.recordThemeSheetButtonClick( 'help' );
+		this.trackButtonClick( 'help' );
 	},
 
 	trackCssClick() {
-		this.props.recordThemeSheetButtonClick( 'css' );
+		this.trackButtonClick( 'css' );
 	},
 
 	togglePreview() {
@@ -158,9 +166,10 @@ const ThemeSheet = React.createClass( {
 	},
 
 	renderBar() {
+		const { translate } = this.props;
 		const placeholder = <span className="theme__sheet-placeholder">loading.....</span>;
 		const title = this.props.name || placeholder;
-		const tag = this.props.author ? i18n.translate( 'by %(author)s', { args: { author: this.props.author } } ) : placeholder;
+		const tag = this.props.author ? translate( 'by %(author)s', { args: { author: this.props.author } } ) : placeholder;
 
 		return (
 			<div className="theme__sheet-bar">
@@ -178,11 +187,13 @@ const ThemeSheet = React.createClass( {
 	},
 
 	renderPreviewButton() {
+		const { translate } = this.props;
+
 		return (
 			<a className="theme__sheet-preview-link" onClick={ this.togglePreview } data-tip-target="theme-sheet-preview">
 				<Gridicon icon="themes" size={ 18 } />
 				<span className="theme__sheet-preview-link-text">
-					{ i18n.translate( 'Open Live Demo', { context: 'Individual theme live preview button' } ) }
+					{ translate( 'Open Live Demo', { context: 'Individual theme live preview button' } ) }
 				</span>
 			</a>
 		);
@@ -205,13 +216,13 @@ const ThemeSheet = React.createClass( {
 	},
 
 	renderSectionNav( currentSection ) {
+		const { siteSlug, id, translate } = this.props;
 		const filterStrings = {
-			'': i18n.translate( 'Overview', { context: 'Filter label for theme content' } ),
-			setup: i18n.translate( 'Setup', { context: 'Filter label for theme content' } ),
-			support: i18n.translate( 'Support', { context: 'Filter label for theme content' } ),
+			'': translate( 'Overview', { context: 'Filter label for theme content' } ),
+			setup: translate( 'Setup', { context: 'Filter label for theme content' } ),
+			support: translate( 'Support', { context: 'Filter label for theme content' } ),
 		};
 
-		const { siteSlug, id } = this.props;
 		const sitePart = siteSlug ? `/${ siteSlug }` : '';
 
 		const nav = (
@@ -275,37 +286,41 @@ const ThemeSheet = React.createClass( {
 	},
 
 	renderContactUsCard( isPrimary = false ) {
+		const { translate } = this.props;
+
 		return (
 			<Card className="theme__sheet-card-support">
 				<Gridicon icon="help-outline" size={ 48 } />
 				<div className="theme__sheet-card-support-details">
-					{ i18n.translate( 'Need extra help?' ) }
-					<small>{ i18n.translate( 'Get in touch with our support team' ) }</small>
+					{ translate( 'Need extra help?' ) }
+					<small>{ translate( 'Get in touch with our support team' ) }</small>
 				</div>
 				<Button
 					primary={ isPrimary }
 					href={ '/help/contact/' }
 					onClick={ this.trackContactUsClick }>
-					Contact us
+					{ translate( 'Contact us' ) }
 				</Button>
 			</Card>
 		);
 	},
 
 	renderThemeForumCard( isPrimary = false ) {
+		const { translate } = this.props;
+
 		if ( ! this.props.forumUrl ) {
 			return null;
 		}
 
 		const description = this.props.isPremium
-			? i18n.translate( 'Get in touch with the theme author' )
-			: i18n.translate( 'Get help from volunteers and staff' );
+			? translate( 'Get in touch with the theme author' )
+			: translate( 'Get help from volunteers and staff' );
 
 		return (
 			<Card className="theme__sheet-card-support">
 				<Gridicon icon="comment" size={ 48 } />
 				<div className="theme__sheet-card-support-details">
-					{ i18n.translate( 'Have a question about this theme?' ) }
+					{ translate( 'Have a question about this theme?' ) }
 					<small>{ description }</small>
 				</div>
 				<Button primary={ isPrimary } href={ this.props.forumUrl }>Visit forum</Button>
@@ -314,17 +329,18 @@ const ThemeSheet = React.createClass( {
 	},
 
 	renderCssSupportCard() {
+		const { translate } = this.props;
 		return (
 			<Card className="theme__sheet-card-support">
 				<Gridicon icon="briefcase" size={ 48 } />
 				<div className="theme__sheet-card-support-details">
-					{ i18n.translate( 'Need CSS help? ' ) }
-					<small>{ i18n.translate( 'Get help from the experts in our CSS forum' ) }</small>
+					{ translate( 'Need CSS help? ' ) }
+					<small>{ translate( 'Get help from the experts in our CSS forum' ) }</small>
 				</div>
 				<Button
 					href="//en.forums.wordpress.com/forum/css-customization"
 					onClick={ this.trackCssClick }>
-					Visit forum
+					{ translate( 'Visit forum' ) }
 				</Button>
 			</Card>
 		);
@@ -350,7 +366,7 @@ const ThemeSheet = React.createClass( {
 	},
 
 	renderFeaturesCard() {
-		const { isJetpack, siteSlug, taxonomies } = this.props;
+		const { isJetpack, siteSlug, taxonomies, translate } = this.props;
 		if ( ! taxonomies || ! isArray( taxonomies.theme_feature ) ) {
 			return null;
 		}
@@ -369,7 +385,7 @@ const ThemeSheet = React.createClass( {
 
 		return (
 			<div>
-				<SectionHeader label={ i18n.translate( 'Features' ) } />
+				<SectionHeader label={ translate( 'Features' ) } />
 				<Card>
 					<ul className="theme__sheet-features-list">
 						{ themeFeatures }
@@ -393,12 +409,12 @@ const ThemeSheet = React.createClass( {
 	},
 
 	getDefaultOptionLabel() {
-		const { defaultOption, isActive, isLoggedIn, isPremium, isPurchased } = this.props;
+		const { defaultOption, isActive, isLoggedIn, isPremium, isPurchased, translate } = this.props;
 		if ( isLoggedIn && ! isActive ) {
 			if ( isPremium && ! isPurchased ) { // purchase
-				return i18n.translate( 'Pick this design' );
+				return translate( 'Pick this design' );
 			} // else: activate
-			return i18n.translate( 'Activate this design' );
+			return translate( 'Activate this design' );
 		}
 		return defaultOption.label;
 	},
@@ -422,10 +438,11 @@ const ThemeSheet = React.createClass( {
 	},
 
 	renderError() {
-		const emptyContentTitle = i18n.translate( 'Looking for great WordPress designs?', {
+		const { translate } = this.props;
+		const emptyContentTitle = translate( 'Looking for great WordPress designs?', {
 			comment: 'Message displayed when requested theme was not found',
 		} );
-		const emptyContentMessage = i18n.translate( 'Check our theme showcase', {
+		const emptyContentMessage = translate( 'Check our theme showcase', {
 			comment: 'Message displayed when requested theme was not found',
 		} );
 
@@ -434,7 +451,7 @@ const ThemeSheet = React.createClass( {
 				<EmptyContentComponent
 					title={ emptyContentTitle }
 					line={ emptyContentMessage }
-					action={ i18n.translate( 'View the showcase' ) }
+					action={ translate( 'View the showcase' ) }
 					actionURL="/design"
 				/>
 			</Main>
@@ -446,11 +463,12 @@ const ThemeSheet = React.createClass( {
 	},
 
 	renderPrice() {
+		const { translate } = this.props;
 		let price = this.props.price;
 		if ( ! this.isLoaded() || this.props.isActive || this.props.isPurchased ) {
 			price = '';
 		} else if ( ! this.props.isPremium ) {
-			price = i18n.translate( 'Free' );
+			price = translate( 'Free' );
 		}
 
 		return price ? <span className="theme__sheet-action-bar-cost">{ price }</span> : '';
@@ -478,8 +496,8 @@ const ThemeSheet = React.createClass( {
 		const analyticsPath = `/theme/:slug${ section ? '/' + section : '' }${ siteID ? '/:site_id' : '' }`;
 		const analyticsPageTitle = `Themes > Details Sheet${ section ? ' > ' + titlecase( section ) : '' }${ siteID ? ' > Site' : '' }`;
 
-		const { name: themeName, description, currentUserId, isJetpack, siteIdOrWpcom } = this.props;
-		const title = themeName && i18n.translate( '%(themeName)s Theme', {
+		const { name: themeName, description, currentUserId, isJetpack, siteIdOrWpcom, translate } = this.props;
+		const title = themeName && translate( '%(themeName)s Theme', {
 			args: { themeName }
 		} );
 		const canonicalUrl = `https://wordpress.com/theme/${ this.props.id }`; // TODO: use getDetailsUrl() When it becomes availavle
@@ -520,7 +538,7 @@ const ThemeSheet = React.createClass( {
 				{ this.state.showPreview && this.renderPreview() }
 				<HeaderCake className="theme__sheet-action-bar"
 					backHref={ this.props.backPath }
-					backText={ i18n.translate( 'All Themes' ) }>
+					backText={ translate( 'All Themes' ) }>
 					{ this.renderButton() }
 				</HeaderCake>
 				<div className="theme__sheet-columns">
@@ -595,12 +613,38 @@ const ThemeSheetWithOptions = ( props ) => {
 	);
 };
 
-const mapDispatchToProps = ( dispatch, ownProps ) => ( {
-	recordThemeSheetButtonClick: ( context ) => dispatch( recordTracksEvent( 'calypso_theme_sheet_button_click', {
-		theme_name: ownProps.id,
-		button_context: context
-	} ) )
-} );
+const mapStateToProps = ( state, { id } ) => {
+	const selectedSite = getSelectedSite( state );
+	const siteSlug = selectedSite ? getSiteSlug( state, selectedSite.ID ) : '';
+	const isJetpack = selectedSite && isJetpackSite( state, selectedSite.ID );
+	const siteIdOrWpcom = isJetpack ? selectedSite.ID : 'wpcom';
+	const backPath = getBackPath( state );
+	const currentUserId = getCurrentUserId( state );
+	const isCurrentUserPaid = isUserPaid( state, currentUserId );
+	const theme = getTheme( state, siteIdOrWpcom, id );
+	const error = theme ? false : getThemeRequestErrors( state, id, siteIdOrWpcom );
+
+	return {
+		...theme,
+		id,
+		error,
+		selectedSite,
+		siteSlug,
+		isJetpack,
+		siteIdOrWpcom,
+		backPath,
+		currentUserId,
+		isCurrentUserPaid,
+		isLoggedIn: !! currentUserId,
+		isActive: selectedSite && isThemeActive( state, id, selectedSite.ID ),
+		isPremium: isThemePremium( state, id ),
+		isPurchased: selectedSite && (
+			isThemePurchased( state, id, selectedSite.ID ) ||
+			hasFeature( state, selectedSite.ID, FEATURE_UNLIMITED_PREMIUM_THEMES )
+		),
+		forumUrl: selectedSite && getThemeForumUrl( state, id, selectedSite.ID )
+	};
+};
 
 export default connect(
 	/*
@@ -626,37 +670,8 @@ export default connect(
 	 * The solution to this incredibly intricate issue is simple: Give ThemeSheet
 	 * a valid defaultProp for defaultOption.
 	 */
-	( state, { id } ) => {
-		const selectedSite = getSelectedSite( state );
-		const siteSlug = selectedSite ? getSiteSlug( state, selectedSite.ID ) : '';
-		const isJetpack = selectedSite && isJetpackSite( state, selectedSite.ID );
-		const siteIdOrWpcom = isJetpack ? selectedSite.ID : 'wpcom';
-		const backPath = getBackPath( state );
-		const currentUserId = getCurrentUserId( state );
-		const isCurrentUserPaid = isUserPaid( state, currentUserId );
-		const theme = getTheme( state, siteIdOrWpcom, id );
-		const error = theme ? false : getThemeRequestErrors( state, id, siteIdOrWpcom );
-
-		return {
-			...theme,
-			id,
-			error,
-			selectedSite,
-			siteSlug,
-			isJetpack,
-			siteIdOrWpcom,
-			backPath,
-			currentUserId,
-			isCurrentUserPaid,
-			isLoggedIn: !! currentUserId,
-			isActive: selectedSite && isThemeActive( state, id, selectedSite.ID ),
-			isPremium: isThemePremium( state, id ),
-			isPurchased: selectedSite && (
-				isThemePurchased( state, id, selectedSite.ID ) ||
-				hasFeature( state, selectedSite.ID, FEATURE_UNLIMITED_PREMIUM_THEMES )
-			),
-			forumUrl: selectedSite && getThemeForumUrl( state, id, selectedSite.ID )
-		};
-	},
-	mapDispatchToProps
-)( ThemeSheetWithOptions );
+	mapStateToProps,
+	{
+		recordTracksEvent,
+	}
+)( localize( ThemeSheetWithOptions ) );
