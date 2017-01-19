@@ -9,6 +9,7 @@ import { bindActionCreators } from 'redux';
  * Internal dependencies
  */
 import { requestTeams } from 'state/reader/teams/actions';
+import { isRequestingReaderTeams } from 'state/selectors';
 
 class QueryReaderTeams extends Component {
 	componentWillMount() {
@@ -29,9 +30,14 @@ QueryReaderTeams.propTypes = {
 	request: PropTypes.func
 };
 
+const mapStateToProps = state => ( {
+	requesting: isRequestingReaderTeams( state )
+} );
+
+const mapDispatchToProps = dispatch =>
+	bindActionCreators( { requestTeams }, dispatch );
+
 export default connect(
-	null,
-	dispatch => {
-		return bindActionCreators( { requestTeams, }, dispatch );
-	}
+	mapStateToProps,
+	mapDispatchToProps,
 )( QueryReaderTeams );
