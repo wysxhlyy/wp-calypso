@@ -92,20 +92,27 @@ export const ImporterHeader = React.createClass( {
 		const canCancel = isEnabled && ! includes( [ appStates.UPLOADING ], importerState );
 		const isScary = includes( [ ...stopStates, ...cancelStates ], importerState );
 
+		// Users were clicking on Stop during artificial delay, which results in backfill failures.
+		// Temporarily introducing this in order to hide Stop button until async job is completed.
+		const stoppable = includes( [ ...stopStates ], importerState );
+
 		return (
 			<header className="importer-service">
 				{ includes( [ 'wordpress', 'medium' ], icon )
 					? <SocialLogo className="importer__service-icon" icon={ icon } size={ 48 } />
 					: <svg className="importer__service-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" /> }
-				<Button
-					className="importer__master-control"
-					disabled={ ! canCancel }
-					isPrimary={ false }
-					scary={ isScary }
-					onClick={ this.controlButtonClicked }
-				>
-					{ this.getButtonText() }
-				</Button>
+				{ ! stoppable &&
+					<Button
+						className="importer__master-control"
+						disabled={ ! canCancel }
+						isPrimary={ false }
+						scary={ isScary }
+						onClick={ this.controlButtonClicked }
+					>
+
+						{ this.getButtonText() }
+					</Button>
+				}
 				<div className="importer__service-info">
 					<h1 className="importer__service-title">{ title }</h1>
 					<p>{ description }</p>
