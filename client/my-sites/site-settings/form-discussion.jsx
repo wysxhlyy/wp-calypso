@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React, { Component } from 'react';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { flowRight, pick } from 'lodash';
 
@@ -20,13 +19,10 @@ import FormSettingExplanation from 'components/forms/form-setting-explanation';
 import FormTextarea from 'components/forms/form-textarea';
 import FormTextInput from 'components/forms/form-text-input';
 import FormToggle from 'components/forms/form-toggle';
-import QueryJetpackModules from 'components/data/query-jetpack-modules';
-import QueryJetpackSettings from 'components/data/query-jetpack-settings';
 import SectionHeader from 'components/section-header';
 import wrapSettingsForm from './wrap-settings-form';
 import { getSelectedSiteId } from 'state/ui/selectors';
 import { isJetpackSite, isJetpackModuleActive, isJetpackMinimumVersion } from 'state/sites/selectors';
-import { updateSettings } from 'state/jetpack/settings/actions';
 
 class SiteSettingsFormDiscussion extends Component {
 	handleCommentOrder = () => {
@@ -83,8 +79,6 @@ class SiteSettingsFormDiscussion extends Component {
 
 		return (
 			<div>
-				<QueryJetpackSettings siteId={ this.props.siteId } />
-				<QueryJetpackModules siteId={ this.props.siteId } />
 				<CommentDisplaySettings
 					onChangeField={ onChangeField }
 					submittingForm={ isRequestingSettings || isSavingSettings }
@@ -458,7 +452,7 @@ class SiteSettingsFormDiscussion extends Component {
 	}
 
 	renderSectionHeader( title, showButton = true ) {
-		const { handleSubmitForm, isRequestingSettings, isSavingSettings, translate } = this.props;
+		const { handleSubmitForm, isRequestingSettings, isSavingSettings, translate } = this.props;
 		return (
 			<SectionHeader label={ title }>
 				{ showButton &&
@@ -513,8 +507,7 @@ const connectComponent = connect(
 			isCommentsModuleActive: isJetpackModuleActive( state, siteId, 'comments' ),
 			jetpackVersionSupportsCalypsoSettingsUI: false !== isJetpackMinimumVersion( state, siteId, '4.5-beta1' ),
 		};
-	},
-	dispatch => bindActionCreators( { updateSettings }, dispatch )
+	}
 );
 
 const getFormSettings = settings => {
