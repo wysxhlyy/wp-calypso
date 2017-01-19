@@ -505,7 +505,7 @@ const connectComponent = connect(
 			isJetpack: isJetpackSite( state, siteId ),
 			isLikesModuleActive: isJetpackModuleActive( state, siteId, 'likes' ),
 			isCommentsModuleActive: isJetpackModuleActive( state, siteId, 'comments' ),
-			jetpackVersionSupportsCalypsoSettingsUI: false !== isJetpackMinimumVersion( state, siteId, '4.5-beta1' ),
+			jetpackVersionSupportsCalypsoSettingsUI: false !== isJetpackMinimumVersion( state, siteId, '4.6-alpha' ),
 		};
 	}
 );
