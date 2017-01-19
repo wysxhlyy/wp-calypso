@@ -268,8 +268,13 @@ function filterDesignTypeInFlow( flow ) {
 function filterFlowName( flowName ) {
 	const defaultFlows = [ 'main', 'website' ];
 
-	if ( includes( defaultFlows, flowName ) && abtest( 'userFirstSignup' ) === 'userFirst' ) {
-		return 'user-first';
+	/**
+	 * Only run the User First Signup for logged out users.
+	 */
+	if ( ! user.get() ) {
+		if ( includes( defaultFlows, flowName ) && abtest( 'userFirstSignup' ) === 'userFirst' ) {
+			return 'user-first';
+		}
 	}
 
 	return flowName;
