@@ -14,6 +14,7 @@ import automatedTransfer from './automated-transfer/reducer';
 import comments from './comments/reducer';
 import componentsUsageStats from './components-usage-stats/reducer';
 import consoleDispatcher from './console-dispatch';
+import countries from './countries/reducer';
 import countryStates from './country-states/reducer';
 import currentUser from './current-user/reducer';
 import documentHead from './document-head/reducer';
@@ -65,6 +66,7 @@ export const reducer = combineReducers( {
 	automatedTransfer,
 	comments,
 	componentsUsageStats,
+	countries,
 	countryStates,
 	currentUser,
 	documentHead,
