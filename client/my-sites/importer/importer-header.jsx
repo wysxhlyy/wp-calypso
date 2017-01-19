@@ -92,8 +92,8 @@ export const ImporterHeader = React.createClass( {
 		const canCancel = isEnabled && ! includes( [ appStates.UPLOADING ], importerState );
 		const isScary = includes( [ ...stopStates, ...cancelStates ], importerState );
 
-		// Users were clicking on Stop during artificial delay, which results in backfill failures.
-		// Temporarily introducing this in order to hide Stop button until async job is completed.
+		// Users were clicking on Stop during artificial delay, which resulted in backfill failures.
+		// Introducing this check in order to hide Stop button until async job is completed.
 		const stoppable = includes( [ ...stopStates ], importerState );
 
 		return (
