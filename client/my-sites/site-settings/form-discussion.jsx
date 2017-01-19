@@ -135,6 +135,13 @@ class SiteSettingsFormDiscussion extends Component {
 						}
 					</span>
 				</FormToggle>
+				<FormToggle
+					className="is-compact"
+					checked={ 'asc' === fields.comment_order }
+					disabled={ isRequestingSettings }
+					onChange={ this.handleCommentOrder }>
+					<span>{ translate( 'Comments should be displayed with the older comments at the top of each page' ) }</span>
+				</FormToggle>
 				{ markdownSupported &&
 					<FormToggle
 						className="is-compact"
@@ -155,13 +162,6 @@ class SiteSettingsFormDiscussion extends Component {
 						</span>
 					</FormToggle>
 				}
-				<FormToggle
-					className="is-compact"
-					checked={ 'asc' === fields.comment_order }
-					disabled={ isRequestingSettings }
-					onChange={ this.handleCommentOrder }>
-					<span>{ translate( 'Comments should be displayed with the older comments at the top of each page' ) }</span>
-				</FormToggle>
 			</FormFieldset>
 		);
 	}
