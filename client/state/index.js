@@ -10,6 +10,7 @@ import { createStore, applyMiddleware, combineReducers, compose } from 'redux';
 import noticesMiddleware from './notices/middleware';
 import application from './application/reducer';
 import accountRecovery from './account-recovery/reducer';
+import audioMiddleware from './audio/middleware';
 import automatedTransfer from './automated-transfer/reducer';
 import comments from './comments/reducer';
 import componentsUsageStats from './components-usage-stats/reducer';
@@ -108,7 +109,7 @@ export const reducer = combineReducers( {
 	wordads,
 } );
 
-const middleware = [ thunkMiddleware, noticesMiddleware ];
+const middleware = [ thunkMiddleware, noticesMiddleware, audioMiddleware ];
 
 if ( typeof window === 'object' ) {
 	// Browser-specific middlewares
