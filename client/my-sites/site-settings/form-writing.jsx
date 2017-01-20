@@ -30,6 +30,8 @@ import { getSelectedSiteId } from 'state/ui/selectors';
 import { requestPostTypes } from 'state/post-types/actions';
 import CustomPostTypeFieldset from './custom-post-types-fieldset';
 import PublishingTools from './publishing-tools';
+import QueryJetpackModules from 'components/data/query-jetpack-modules';
+import QueryJetpackSettings from 'components/data/query-jetpack-settings';
 
 class SiteSettingsFormWriting extends Component {
 
@@ -101,6 +103,7 @@ class SiteSettingsFormWriting extends Component {
 			fields,
 			handleToggle,
 			isRequestingSettings,
+			isSavingSettings,
 			jetpackVersionSupportsCustomTypes,
 			onChangeField,
 			markChanged,
@@ -198,15 +201,20 @@ class SiteSettingsFormWriting extends Component {
 
 				{
 					this.props.isJetpackSite && this.props.jetpackSettingsUISupported && (
-						<PublishingTools
-							submittingForm={ this.state.submittingForm }
-							onSubmitForm={ this.handleSubmitForm }
-							fetchingSettings={ this.state.fetchingSettings }
-							/>
+						<div>
+							<QueryJetpackSettings siteId={ this.props.siteId } />
+							<QueryJetpackModules siteId={ this.props.siteId } />
+							<PublishingTools
+								onSubmitForm={ this.submitFormAndActivateCustomContentModule }
+								isSavingSettings={ isSavingSettings }
+								isRequestingSettings={ isRequestingSettings }
+								fields={ fields }
+								/>
+						</div>
 					)
 				}
 
-				{ config.isEnabled( 'press-this' ) && (
+				{ config.isEnabled( 'press-this' ) && ! ( this.props.isJetpackSite || this.props.jetpackSettingsUISupported ) && (
 					<div>
 						{
 							this.renderSectionHeader( translate( 'Press This', {
@@ -243,7 +251,8 @@ const getFormSettings = partialRight( pick, [
 	'wpcom_publish_posts_with_markdown',
 	'markdown_supported',
 	'jetpack_testimonial',
-	'jetpack_portfolio'
+	'jetpack_portfolio',
+	'post_by_email_address'
 ] );
 
 export default flowRight(
