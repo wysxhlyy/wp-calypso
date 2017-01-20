@@ -592,7 +592,8 @@ function recordPageViewInFloodlight( urlPath ) {
 	recordParamsInFloodlight( {
 		type: 'wordp0',
 		cat: 'wpvisit',
-		u7: sessionId
+		u7: sessionId,
+		ord: sessionId
 	} );
 
 	recordParamsInFloodlight( {
