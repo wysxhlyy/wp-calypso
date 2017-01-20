@@ -335,7 +335,7 @@ export default React.createClass( {
 
 		return (
 			<div>
-				{ this.renderPrivacySection() }
+				{ cartItems.hasDomainRegistration( this.props.cart ) && this.renderPrivacySection() }
 				<PaymentBox
 					classSet={ classSet }
 					title={ this.translate(
