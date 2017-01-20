@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { Component, PropTypes } from 'react';
+import classnames from 'classnames';
 import { connect } from 'react-redux';
 import { identity, find, replace, some } from 'lodash';
 import { localize } from 'i18n-calypso';
@@ -366,12 +367,9 @@ class SharingService extends Component {
 
 	render() {
 		const connectionStatus = this.getConnectionStatus( this.props.service.ID );
-		const elementClass = [
-			'sharing-service',
-			this.props.service.ID,
-			connectionStatus,
-			this.state.isOpen ? 'is-open' : ''
-		].join( ' ' );
+		const classNames = classnames( 'sharing-service', this.props.service.ID, connectionStatus, {
+			'is-open': this.state.isOpen,
+		} );
 		const accounts = this.state.isSelectingAccount ? this.props.availableExternalAccounts : [];
 
 		const header = (
@@ -390,22 +388,6 @@ class SharingService extends Component {
 				</div>
 			</div>
 		);
-
-		const content = (
-			<div className={ 'sharing-service__content ' + ( this.props.isFetching ? 'is-placeholder' : '' ) }>
-				<ServiceExamples service={ this.props.service } />
-				<ServiceConnectedAccounts
-					connections={ this.getConnections() }
-					isDisconnecting={ this.state.isDisconnecting }
-					isRefreshing={ this.state.isRefreshing }
-					onAddConnection={ this.addConnection }
-					onRefreshConnection={ this.refresh }
-					onRemoveConnection={ this.removeConnection }
-					onToggleSitewideConnection={ this.toggleSitewideConnection }
-					service={ this.props.service } />
-				<ServiceTip service={ this.props.service } />
-			</div> );
-
 		const action = (
 			<ServiceAction
 				status={ connectionStatus }
@@ -415,6 +397,7 @@ class SharingService extends Component {
 				isRefreshing={ this.state.isRefreshing }
 				isDisconnecting={ this.state.isDisconnecting } />
 		);
+
 		return (
 			<li>
 				<AccountDialog
@@ -423,13 +406,26 @@ class SharingService extends Component {
 					accounts={ accounts }
 					onAccountSelected={ this.addConnection } />
 				<FoldableCard
-					className={ elementClass }
+					className={ classNames }
 					header={ header }
 					clickableHeader
 					compact
 					summary={ action }
-					expandedSummary={ action } >
-					{ content }
+					expandedSummary={ action }
+				>
+					<div className={ 'sharing-service__content ' + ( this.props.isFetching ? 'is-placeholder' : '' ) }>
+						<ServiceExamples service={ this.props.service } />
+						<ServiceConnectedAccounts
+							connections={ this.getConnections() }
+							isDisconnecting={ this.state.isDisconnecting }
+							isRefreshing={ this.state.isRefreshing }
+							onAddConnection={ this.addConnection }
+							onRefreshConnection={ this.refresh }
+							onRemoveConnection={ this.removeConnection }
+							onToggleSitewideConnection={ this.toggleSitewideConnection }
+							service={ this.props.service } />
+						<ServiceTip service={ this.props.service } />
+					</div>
 				</FoldableCard>
 			</li>
 		);
