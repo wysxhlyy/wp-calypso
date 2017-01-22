@@ -83,12 +83,20 @@ export default React.createClass( {
 	},
 
 	validate( fieldValues, onComplete ) {
-		const domainNames = map( cartItems.getDomainRegistrations( this.props.cart ), 'meta' );
+		if ( this.needsOnlyGoogleAppsDetails() ) {
+			wpcom.validateGoogleAppsContactInformation( fieldValues, this.generateValidationHandler( onComplete ) );
+			return;
+		}
 
-		wpcom.validateDomainContactInformation( fieldValues, domainNames, ( error, data ) => {
+		const domainNames = map( cartItems.getDomainRegistrations( this.props.cart ), 'meta' );
+		wpcom.validateDomainContactInformation( fieldValues, domainNames, this.generateValidationHandler( onComplete ) );
+	},
+
+	generateValidationHandler( onComplete ) {
+		return ( error, data ) => {
 			const messages = data && data.messages || {};
 			onComplete( error, messages );
-		} );
+		};
 	},
 
 	setFormState( form ) {
