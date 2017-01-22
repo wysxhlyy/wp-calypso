@@ -112,46 +112,62 @@ function renderNoVisibleSites( context ) {
 	);
 }
 
-function isPathAllowedForDomainOnlySite( pathname, domainName ) {
+function renderSelectedSiteIsDomainOnly( { reactContext, selectedSite } ) {
+	const EmptyContentComponent = require( 'components/empty-content' );
+	const { store: reduxStore } = reactContext;
+
+	removeSidebar( reactContext );
+
+	renderWithReduxStore(
+		React.createElement( EmptyContentComponent, {
+			title: i18n.translate( 'This feature is not available for domains' ),
+			line: i18n.translate( 'To use this feature you need to create a site for this domain' ),
+			action: i18n.translate( 'Upgrade' ),
+			actionURL: '//dashboard.wordpress.com/wp-admin/index.php?page=my-blogs',
+			secondaryAction: i18n.translate( 'Manage domain' ),
+			secondaryActionURL: domainManagementList( selectedSite.slug )
+		} ),
+		document.getElementById( 'primary' ),
+		reduxStore
+	);
+}
+
+function isPathAllowedForDomainOnlySite( { reactContext: { pathname }, selectedSite } ) {
 	const urlPrefixesWhiteListForDomainOnlySite = [
-		domainManagementList( domainName ),
+		domainManagementList( selectedSite.slug ),
 		'/checkout/',
 	];
 
 	return urlPrefixesWhiteListForDomainOnlySite.some( path => startsWith( pathname, path ) );
 }
 
-function onSelectedSiteAvailable( context ) {
-	const selectedSite = sites.getSelectedSite();
-	const state = context.store.getState();
+function isSelectedSiteDomainOnlySite( { reactContext: { store: reduxStore }, selectedSite } ) {
+	return isDomainOnlySite( reduxStore.getState(), selectedSite.ID );
+}
 
+function feedReduxStoreWithSelectedSite( { reactContext: { store: reduxStore }, selectedSite } ) {
 	// Currently, sites are only made available in Redux state by the receive
 	// here (i.e. only selected sites). If a site is already known in state,
 	// avoid receiving since we risk overriding changes made more recently.
-	if ( ! getSite( state, selectedSite.ID ) ) {
-		context.store.dispatch( receiveSite( selectedSite ) );
+	if ( ! getSite( reduxStore.getState(), selectedSite.ID ) ) {
+		reduxStore.dispatch( receiveSite( selectedSite ) );
 	}
+	reduxStore.dispatch( setSelectedSiteId( selectedSite.ID ) );
+}
 
-	context.store.dispatch( setSelectedSiteId( selectedSite.ID ) );
-
-	if ( isDomainOnlySite( state, selectedSite.ID ) &&
-		! isPathAllowedForDomainOnlySite( context.pathname, selectedSite.slug ) ) {
-		page.redirect( domainManagementList( selectedSite.slug ) );
-		return false;
-	}
-
+const RECENT_SITES_TO_KEEP = 3;
+function setRecentSitesPreferenceInReduxStore( { reactContext: { store: reduxStore }, selectedSite } ) {
 	// Update recent sites preference
+	const state = reduxStore.getState();
 	if ( hasReceivedRemotePreferences( state ) ) {
 		const recentSites = getPreference( state, 'recentSites' );
 		if ( selectedSite.ID !== recentSites[ 0 ] ) {
-			context.store.dispatch( savePreference( 'recentSites', uniq( [
+			reduxStore.dispatch( savePreference( 'recentSites', uniq( [
 				selectedSite.ID,
 				...recentSites
-			] ).slice( 0, 3 ) ) );
+			] ).slice( 0, RECENT_SITES_TO_KEEP ) ) );
 		}
 	}
-
-	return true;
 }
 
 module.exports = {
@@ -210,45 +226,54 @@ module.exports = {
 			return next();
 		}
 
-		// If there's a valid site from the url path
-		// set site visibility to just that site on the picker
-		if ( sites.select( siteID ) ) {
-			const selectionComplete = onSelectedSiteAvailable( context );
+		// ensure we have fetched sites
+		const sitesFetchedPromise = new Promise( ( resolve, reject ) => {
+			if ( ! sites.fetched && sites.fetching ) {
+				sites.once( 'change', () => sites.fetched ? resolve() : reject() );
+			} else if ( currentUser.visible_site_count !== sites.getVisible().length ) {
+				sites.initialized = false;
 
-			// if there was a redirect, we should terminate processing of next routes
-			// and let the redirect proceed
-			if ( ! selectionComplete ) {
-				return;
-			}
-		} else {
-			// if sites has fresh data and siteID is invalid
-			// redirect to allSitesPath
-			if ( sites.fetched || ! sites.fetching ) {
-				return page.redirect( allSitesPath );
-			}
+				const waitingNotice = notices.info( i18n.translate( 'Finishing set up…' ), { showDismiss: false } );
+				sites.once( 'change', () => {
+					notices.removeNotice( waitingNotice );
+					sites.fetched ? resolve() : reject();
+				} );
 
-			let waitingNotice;
-			const selectOnSitesChange = () => {
-				// if sites have loaded, but siteID is invalid, redirect to allSitesPath
-				if ( sites.select( siteID ) ) {
-					sites.initialized = true;
-					onSelectedSiteAvailable( context );
-					if ( waitingNotice ) {
-						notices.removeNotice( waitingNotice );
-					}
-				} else if ( ( currentUser.visible_site_count !== sites.getVisible().length ) ) {
-					sites.initialized = false;
-					waitingNotice = notices.info( i18n.translate( 'Finishing set up…' ), { showDismiss: false } );
-					sites.once( 'change', selectOnSitesChange );
-					sites.fetch();
-				} else {
-					page.redirect( allSitesPath );
+				sites.fetch();
+			} else {
+				return resolve();
+			}
+		} );
+
+		// Select a site
+		sitesFetchedPromise
+			.catch( error => {
+				page.redirect( allSitesPath );
+				return Promise.reject( error );
+			} )
+			.then( () => {
+				const siteSelectionPipeline = [
+					feedReduxStoreWithSelectedSite,
+					selectionContext =>
+						isSelectedSiteDomainOnlySite( selectionContext ) && ! isPathAllowedForDomainOnlySite( selectionContext )
+						? !! renderSelectedSiteIsDomainOnly( selectionContext ) // return false so we'll stop at this step
+						: true,
+					setRecentSitesPreferenceInReduxStore,
+					next,
+				];
+
+				if ( ! sites.select( siteID ) ) {
+					return page.redirect( allSitesPath );
 				}
-			};
-			// Otherwise, check when sites has loaded
-			sites.once( 'change', selectOnSitesChange );
-		}
-		next();
+
+				const selectionContext = {
+					selectedSite: sites.getSelectedSite(),
+					reactContext: context,
+				};
+
+				// Process the pipeline to completion or stop when step returns false
+				siteSelectionPipeline.every( stepFunction => stepFunction( selectionContext ) !== false );
+			} );
 	},
 
 	awaitSiteLoaded( context, next ) {
