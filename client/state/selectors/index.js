@@ -18,6 +18,7 @@ export canCurrentUser from './can-current-user';
 export countPostLikes from './count-post-likes';
 export editedPostHasContent from './edited-post-has-content';
 export getBillingTransactions from './get-billing-transactions';
+export getFollowCount from './get-follow-count';
 export getMenuItemTypes from './get-menu-item-types';
 export getPostLikes from './get-post-likes';
 export getSharingButtons from './get-sharing-buttons';
