@@ -124,7 +124,7 @@ function renderSelectedSiteIsDomainOnly( { reactContext, selectedSite } ) {
 			line: i18n.translate( 'To use this feature you need to create a site for this domain' ),
 			action: i18n.translate( 'Upgrade' ),
 			actionURL: '//dashboard.wordpress.com/wp-admin/index.php?page=my-blogs',
-			secondaryAction: i18n.translate( 'Manage domain' ),
+			secondaryAction: i18n.translate( 'Domain Management' ),
 			secondaryActionURL: domainManagementList( selectedSite.slug )
 		} ),
 		document.getElementById( 'primary' ),
