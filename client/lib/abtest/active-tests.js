@@ -111,7 +111,7 @@ module.exports = {
 	},
 
 	userFirstSignup: {
-		datestamp: '20160118',
+		datestamp: '20160123',
 		variations: {
 			userLast: 80,
 			userFirst: 20,
@@ -129,6 +129,7 @@ module.exports = {
 		defaultVariation: 'withoutMarketingCopy',
 		allowExistingUsers: true
 	},
+
 	jetpackPlansTabs: {
 		datestamp: '20170117',
 		variations: {
@@ -137,5 +138,4 @@ module.exports = {
 		},
 		defaultVariation: 'noTabs'
 	},
-
 };
